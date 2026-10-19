@@ -109,10 +109,6 @@ No Ansible control node. No manual scripting. Just point, click, deploy.
 - Import settings from a live host via SSH scan
 - Ansible export for CI/CD integration
 
-Let me pull the full list from the source — software tab plus security and infrastructure:
-
-I have everything I need. Here's the README-ready markdown:
-
 ---
 
 ## Available Software
