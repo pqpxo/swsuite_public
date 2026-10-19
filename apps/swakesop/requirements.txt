@@ -1,0 +1,8 @@
+## version 1
+Flask>=3.0,<4
+Flask-SQLAlchemy>=3.1,<4
+Flask-WTF>=1.2,<2
+Pillow>=10,<12
+qrcode[pil]>=8,<9
+gunicorn>=23,<24
+requests>=2.31,<3

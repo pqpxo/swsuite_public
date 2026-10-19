@@ -1,0 +1,19 @@
+services:
+  kicker:
+    build: .
+    container_name: kicker
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      KICKER_DB_PATH: /data/kicker.sqlite
+      KICKER_MASTER_KEY_FILE: /run/secrets/kicker_master_key
+      KICKER_POLL_INTERVAL_HOURS: "6"
+      KICKER_SESSION_SECRET: "${KICKER_SESSION_SECRET}"
+      KICKER_BOOTSTRAP_PASSWORD: "${KICKER_BOOTSTRAP_PASSWORD:-admin}"
+    volumes:
+      - kicker_data:/data
+      - ./master.key:/run/secrets/kicker_master_key:ro
+
+volumes:
+  kicker_data:

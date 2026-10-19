@@ -1,0 +1,224 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SWSuite — six self-hosted apps behind one Caddy edge proxy.
+#
+#   docker compose up -d --build
+#
+# Only the proxy publishes host ports. Every app is reached by subdomain,
+# resolved by a wildcard DNS record pointing at this host.
+# ─────────────────────────────────────────────────────────────────────────────
+name: swsuite
+
+services:
+
+  # ── Edge proxy + portal ────────────────────────────────────────────────────
+  # Caddy also serves the portal itself, so the menu needs no container.
+  proxy:
+    image: caddy:2-alpine
+    container_name: swsuite-proxy
+    restart: unless-stopped
+    ports:
+      - "${PORTAL_PORT:-80}:80"
+    environment:
+      SUITE_DOMAIN: ${SUITE_DOMAIN:-swsuite.lan}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./portal:/srv/portal:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - swsuite
+    depends_on:
+      - cabinet-ui
+      - homelab-inventory
+      - swscan
+      - swaps
+      - swkick
+
+  # ── SWRack — rack.$SUITE_DOMAIN ────────────────────────────────────────────
+  cabinet-db:
+    image: postgres:16-alpine
+    container_name: swsuite-rack-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cabinet_canvas}
+      POSTGRES_USER: ${POSTGRES_USER:-cabinet_canvas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-now}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - rack_postgres_data:/var/lib/postgresql/data
+    networks:
+      - swsuite
+
+  cabinet-api:
+    build:
+      context: ./apps/swrack/apps/api
+      dockerfile: Dockerfile
+    container_name: swsuite-rack-api
+    restart: unless-stopped
+    depends_on:
+      cabinet-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cabinet_canvas}:${POSTGRES_PASSWORD:-change-me-now}@cabinet-db:5432/${POSTGRES_DB:-cabinet_canvas}?schema=public
+      ASSET_STORAGE_PATH: /data/assets
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      CORS_ORIGIN: ${RACK_CORS_ORIGIN:-*}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - rack_asset_data:/data/assets
+    cap_add:
+      - NET_RAW          # live ping checks against rack equipment
+    networks:
+      - swsuite
+
+  cabinet-ui:
+    build:
+      context: ./apps/swrack/apps/web
+      dockerfile: Dockerfile
+      args:
+        # Baked into the bundle's asset and API URLs. Must match the
+        # handle_path prefix in the Caddyfile.
+        BASE_PATH: ${RACK_BASE_PATH:-/rack/}
+    container_name: swsuite-rack-ui
+    restart: unless-stopped
+    depends_on:
+      cabinet-api:
+        condition: service_healthy
+    ports:
+      - "${RACK_PORT:-8088}:80"
+    networks:
+      - swsuite
+
+  # ── SWOps — /ops ───────────────────────────────────────
+  homelab-inventory:
+    build:
+      context: ./apps/swakesop
+      dockerfile: Dockerfile
+    container_name: swsuite-inventory
+    restart: unless-stopped
+    environment:
+      # gunicorn puts SCRIPT_NAME into the WSGI environ, so Flask's url_for()
+      # emits the mount path. Must match the Caddyfile's handle_path prefix.
+      SCRIPT_NAME: ${INVENTORY_BASE_PATH:-/ops}
+      SECRET_KEY: ${INVENTORY_SECRET_KEY:-change-me-in-production}
+      APP_BASE_URL: ${INVENTORY_BASE_URL:-}
+      DATA_DIR: /app/data
+      MINI_QR_RENDER_URL: http://mini-qr-renderer:3000/render
+    volumes:
+      - ${SUITE_DATA:-./data}/inventory:/app/data
+    ports:
+      - "${INVENTORY_PORT:-8085}:8085"
+    depends_on:
+      - mini-qr-renderer
+    networks:
+      - swsuite
+
+  mini-qr-renderer:
+    build:
+      context: ./apps/swakesop/mini-qr-renderer
+    container_name: swsuite-inventory-qr
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      OUTPUT_SIZE: "240"
+      QR_TEMPLATE_PATH: /app/config/qr-code-config.json
+    networks:
+      - swsuite
+
+  # ── SWScan — scan.$SUITE_DOMAIN ────────────────────────────────────────────
+  swscan:
+    build:
+      context: ./apps/swscan
+      dockerfile: Dockerfile
+    container_name: swsuite-scan
+    restart: unless-stopped
+    environment:
+      PORT: 7734
+      SWSCAN_DATA: /data
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    volumes:
+      - ${SUITE_DATA:-./data}/scan:/data
+    ports:
+      - "${SCAN_PORT:-7734}:7734"
+    networks:
+      - swsuite
+
+  # ── SWAps — provision.$SUITE_DOMAIN ────────────────────────────────────────
+  swaps:
+    build:
+      context: ./apps/swaps
+      dockerfile: Dockerfile
+    container_name: swsuite-provision
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+    ports:
+      - "${PROVISION_PORT:-8080}:8080"
+    # The image's own healthcheck probes "localhost", which resolves to ::1
+    # first; these apps listen on IPv4 only, so it always fails. Same probe,
+    # pinned to 127.0.0.1.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - swsuite
+
+  # ── SWKick — /kick ─────────────────────────────────────────────────────────
+  # Run ./scripts/init-swkick.sh once first: it creates the vault master key
+  # under ./secrets and writes the session secret and first-run admin password
+  # into .env. Until then, compose refuses to start with a message saying so.
+  swkick:
+    build:
+      context: ./apps/swkick
+      dockerfile: Dockerfile
+    container_name: swsuite-kick
+    restart: unless-stopped
+    environment:
+      KICKER_DB_PATH: /data/kicker.sqlite
+      KICKER_MASTER_KEY_FILE: /run/secrets/kicker_master_key
+      KICKER_POLL_INTERVAL_HOURS: ${KICK_POLL_INTERVAL_HOURS:-6}
+      KICKER_SESSION_SECRET: ${KICK_SESSION_SECRET:?run ./scripts/init-swkick.sh first}
+      # Only read on first run, while no admin account exists yet.
+      KICKER_BOOTSTRAP_PASSWORD: ${KICK_BOOTSTRAP_PASSWORD:?run ./scripts/init-swkick.sh first}
+    volumes:
+      - ${SUITE_DATA:-./data}/kick:/data
+      # Kept outside the data directory on purpose: a copy of the data alone
+      # cannot decrypt the stored SSH credentials.
+      - ${KICK_MASTER_KEY:-./secrets/swkick-master.key}:/run/secrets/kicker_master_key:ro
+    ports:
+      - "${KICK_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - swsuite
+
+volumes:
+  caddy_data:
+  caddy_config:
+  rack_postgres_data:
+  rack_asset_data:
+
+networks:
+  swsuite:
+    name: swsuite

@@ -1,0 +1,165 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SWSuite edge config — single entry point, path-routed.
+#
+# One proxy host in NGINX Proxy Manager (suite.example.com -> this host:80) serves
+# everything:
+#
+#   /             portal
+#   /rack         SWRack
+#   /ops          SWOps
+#   /scan         SWScan
+#   /swaps        SWAps
+#   /kick         SWKick
+#
+# handle_path strips the prefix before proxying, so each app still sees itself
+# at "/". X-Forwarded-Prefix tells the apps what to put back into the URLs they
+# emit — see each app's BASE_PATH / SCRIPT_NAME wiring in docker-compose.yml.
+#
+# Each app also keeps its own published port for direct access; those are
+# unaffected by any of this.
+# ─────────────────────────────────────────────────────────────────────────────
+
+{
+	admin off
+	# Plain HTTP. TLS is NGINX Proxy Manager's job.
+	auto_https off
+
+	servers {
+		# Without this, Caddy overwrites X-Forwarded-Proto with "http" (the
+		# scheme of the NPM -> Caddy hop), so apps behind it believe the client
+		# arrived over plain HTTP even when NPM served them over TLS.
+		trusted_proxies static private_ranges
+	}
+}
+
+:80 {
+	# Without these, "/rack" (no trailing slash) would miss handle_path and
+	# fall through to the portal's 404.
+	redir /rack /rack/
+	redir /ops /ops/
+	redir /scan /scan/
+	redir /swaps /swaps/
+	redir /kick /kick/
+
+	# Former paths. Permanent redirects so old bookmarks and any QR labels
+	# printed before the rename keep resolving.
+	redir /inventory /ops/ permanent
+	redir /provision /swaps/ permanent
+	handle_path /inventory/* {
+		redir * /ops{uri} permanent
+	}
+	handle_path /provision/* {
+		redir * /swaps{uri} permanent
+	}
+
+	# ── SWRack ───────────────────────────────────────────────────────────────
+	handle_path /rack/* {
+		reverse_proxy cabinet-ui:80 {
+			header_up X-Forwarded-Prefix /rack
+		}
+		request_body {
+			max_size 12MB
+		}
+	}
+
+	# ── SWOps ─────────────────────────────────────────────
+	# "handle", not "handle_path": gunicorn does the stripping itself from
+	# SCRIPT_NAME, and rejects a request whose path has already had the prefix
+	# removed ("Request path '/' does not start with SCRIPT_NAME").
+	handle /ops/* {
+		reverse_proxy homelab-inventory:8085 {
+			header_up X-Forwarded-Prefix /ops
+		}
+		request_body {
+			max_size 64MB
+		}
+	}
+
+	# ── SWScan ───────────────────────────────────────────────────────────────
+	handle_path /scan/* {
+		reverse_proxy swscan:7734 {
+			header_up X-Forwarded-Prefix /scan
+			# Video uploads and long vision-model jobs.
+			transport http {
+				read_timeout 30m
+				write_timeout 30m
+			}
+		}
+		request_body {
+			max_size 2GB
+		}
+	}
+
+	# ── SWAps ────────────────────────────────────────────────────────────────
+	handle_path /swaps/* {
+		# Caddy upgrades WebSocket connections automatically (SSH deploy console).
+		reverse_proxy swaps:8080 {
+			header_up X-Forwarded-Prefix /swaps
+			flush_interval -1
+		}
+	}
+
+	# ── SWKick ───────────────────────────────────────────────────────────────
+	handle_path /kick/* {
+		reverse_proxy swkick:8000 {
+			header_up X-Forwarded-Prefix /kick
+			# Live apt upgrade output streams over Server-Sent Events, and an
+			# upgrade can run for many minutes: no buffering, no timeout.
+			flush_interval -1
+			transport http {
+				read_timeout 0
+				write_timeout 0
+			}
+		}
+	}
+
+	# ── Portal status probes ─────────────────────────────────────────────────
+	handle /healthz/rack {
+		rewrite * /health
+		reverse_proxy cabinet-api:8080
+	}
+	handle /healthz/inventory {
+		# Must include the prefix: gunicorn rejects a path that does not start
+		# with its SCRIPT_NAME.
+		rewrite * /ops/
+		reverse_proxy homelab-inventory:8085
+	}
+	handle /healthz/scan {
+		rewrite * /
+		reverse_proxy swscan:7734
+	}
+	handle /healthz/provision {
+		rewrite * /
+		reverse_proxy swaps:8080
+	}
+	handle /healthz/kick {
+		rewrite * /healthz
+		reverse_proxy swkick:8000
+	}
+
+	# ── Portal ───────────────────────────────────────────────────────────────
+	# Fonts never change under the same name: cache them hard.
+	handle /assets/fonts/* {
+		root * /srv/portal
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# Everything else is edited in place (config.js especially), so make the
+	# browser revalidate on every load. Caddy answers 304 via ETag when nothing
+	# changed, so this costs one small round-trip, not a re-download. Without
+	# it a heuristically cached index.html can pair with a fresh app.js and the
+	# page breaks until a hard refresh.
+	handle {
+		root * /srv/portal
+		header Cache-Control "no-cache"
+		file_server
+	}
+
+	encode gzip
+
+	log {
+		output stdout
+		format console
+	}
+}

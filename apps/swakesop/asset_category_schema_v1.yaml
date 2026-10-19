@@ -1,0 +1,426 @@
+# version 1
+
+universal:
+  native_fields:
+    core:
+      - key: name
+        label: Name
+      - key: location
+        label: Location
+      - key: brand
+        label: Brand
+      - key: model
+        label: Model
+      - key: serial_number
+        label: Serial number
+      - key: parent_asset
+        label: Parent asset
+      - key: use_case
+        label: Use / role
+      - key: notes
+        label: Notes
+      - key: tags
+        label: Tags
+        storage: custom
+        field_type: text
+        placeholder: "Comma-separated, e.g. production, critical, no-backup"
+    network:
+      - key: hostname
+        label: Hostname
+      - key: ip_address
+        label: IP address
+      - key: domain_url
+        label: Domain URL
+      - key: ping_enabled
+        label: Ping check
+      - key: ping_interval_minutes
+        label: Ping interval
+      - key: last_ping_checked_at
+        label: Last ping check
+      - key: last_ping_status
+        label: Last ping result
+    timeline:
+      - key: date_purchased
+        label: Date purchased
+      - key: date_installed
+        label: Date installed
+      - key: date_repaired
+        label: Date repaired
+      - key: date_fixed
+        label: Date fixed
+      - key: retire_date
+        label: Retire date
+
+categories:
+  servers:
+    label: Servers
+    groups:
+      hardware_specs:
+        label: Hardware Specs
+        fields:
+          - { key: cpu_model, label: CPU model, field_type: text, example: "Intel Xeon E3-1220 v6" }
+          - { key: cpu_cores, label: CPU cores, field_type: text, example: "4" }
+          - { key: cpu_threads, label: CPU threads, field_type: text, example: "8" }
+          - { key: ram_total_gb, label: RAM total (GB), field_type: text, example: "32" }
+          - { key: ram_slots_used, label: RAM slots used, field_type: text, example: "2 of 4" }
+          - { key: ram_type, label: RAM type, field_type: text, example: "DDR4 ECC" }
+          - { key: psu_wattage, label: PSU wattage, field_type: text, example: "495W" }
+      storage:
+        label: Storage
+        fields:
+          - { key: drive_count, label: Drive count, field_type: text, example: "4" }
+          - { key: storage_total, label: Storage total, field_type: text, example: "8 TB" }
+          - { key: raid_config, label: RAID config, field_type: text, example: "RAID 5" }
+          - { key: drive_type, label: Drive type, field_type: text, placeholder: "HDD / SSD / NVMe" }
+      os_software:
+        label: OS / Software
+        fields:
+          - { key: operating_system, label: Operating system, field_type: text, example: "VMware ESXi 8" }
+          - { key: os_version, label: OS version, field_type: text, example: "8.0.2" }
+          - { key: hypervisor_type, label: Hypervisor type, field_type: text, placeholder: "ESXi / Proxmox / bare metal / other" }
+          - { key: remote_access, label: Remote access, field_type: text, placeholder: "iDRAC / iLO / IPMI / none" }
+      support:
+        label: Support
+        fields:
+          - { key: warranty_expiry, label: Warranty expiry, field_type: date }
+          - { key: support_url, label: Support URL, field_type: url, example: "https://vendor.example.com" }
+
+  raspberry_pi:
+    label: Raspberry Pi
+    groups:
+      board:
+        label: Board
+        fields:
+          - { key: pi_model, label: Pi model, field_type: text, placeholder: "Pi 5 / Pi 4 Model B / Zero 2 W / CM4 / other" }
+          - { key: board_revision, label: Board revision, field_type: text, example: "c03115" }
+          - { key: ram_variant, label: RAM variant, field_type: text, placeholder: "1 GB / 2 GB / 4 GB / 8 GB" }
+          - { key: gpio_header, label: GPIO header, field_type: text, placeholder: "populated / not populated" }
+      storage:
+        label: Storage
+        fields:
+          - { key: boot_media_type, label: Boot media type, field_type: text, placeholder: "SD card / USB SSD / NVMe via HAT" }
+          - { key: boot_media_size, label: Boot media size, field_type: text, example: "64 GB" }
+          - { key: boot_media_brand, label: Boot media brand, field_type: text, example: "SanDisk Endurance" }
+      os:
+        label: OS
+        fields:
+          - { key: operating_system, label: Operating system, field_type: text, placeholder: "Raspberry Pi OS / DietPi / Ubuntu / Home Assistant OS / other" }
+          - { key: os_version, label: OS version, field_type: text, example: "Bookworm" }
+          - { key: architecture, label: Architecture, field_type: text, placeholder: "64-bit / 32-bit" }
+          - { key: mode, label: Mode, field_type: text, placeholder: "Headless / Desktop" }
+      hardware_add_ons:
+        label: Hardware Add-ons
+        fields:
+          - { key: hats_add_on_boards, label: HATs / add-on boards, field_type: textarea, example: "PoE HAT, RTC module, NVMe base" }
+          - { key: power_source, label: Power source, field_type: text, placeholder: "USB-C PSU / PoE HAT / GPIO pins" }
+          - { key: psu_wattage, label: PSU wattage, field_type: text, example: "27W" }
+          - { key: wifi_in_use, label: Wi‑Fi in use, field_type: checkbox }
+          - { key: mac_address, label: MAC address, field_type: text }
+
+  network_equipment:
+    label: Network Equipment
+    groups:
+      device_specs:
+        label: Device Specs
+        fields:
+          - { key: port_count, label: Port count, field_type: text, example: "24" }
+          - { key: port_speed, label: Port speed, field_type: text, placeholder: "1G / 2.5G / 10G / mixed" }
+          - { key: poe_budget_w, label: PoE budget (W), field_type: text, example: "150" }
+          - { key: uplink_speed, label: Uplink speed, field_type: text, example: "10G SFP+" }
+      management:
+        label: Management
+        fields:
+          - { key: management_platform, label: Management platform, field_type: text, placeholder: "UniFi / OpenWrt / Omada / pfSense / other" }
+          - { key: firmware_version, label: Firmware version, field_type: text, example: "3.2.7" }
+          - { key: console_access, label: Console access, field_type: text, placeholder: "SSH / Web UI / Telnet / Serial" }
+          - { key: vlan_count, label: VLAN count, field_type: text, example: "6" }
+      power:
+        label: Power
+        fields:
+          - { key: power_draw_w, label: Power draw (W), field_type: text, example: "48" }
+          - { key: ups_pdu_port, label: UPS / PDU port, field_type: text }
+
+  cameras:
+    label: Cameras
+    groups:
+      optics_sensor:
+        label: Optics & Sensor
+        fields:
+          - { key: resolution, label: Resolution, field_type: text, example: "4K / 8MP / 2MP" }
+          - { key: lens_fov, label: Lens FOV, field_type: text, example: "110° wide" }
+          - { key: night_vision, label: Night vision, field_type: text, placeholder: "IR / colour night vision / none" }
+          - { key: placement, label: Placement, field_type: text, placeholder: "indoor / outdoor / both" }
+      connectivity:
+        label: Connectivity
+        fields:
+          - { key: connection_type, label: Connection type, field_type: text, placeholder: "PoE wired / Wi‑Fi / 4G LTE" }
+          - { key: nvr_recorder, label: NVR / recorder, field_type: text }
+          - { key: rtsp_stream_url, label: RTSP stream URL, field_type: url, example: "rtsp://..." }
+      recording:
+        label: Recording
+        fields:
+          - { key: storage_type, label: Storage type, field_type: text, placeholder: "NVR / SD card / cloud" }
+          - { key: retention_days, label: Retention (days), field_type: text, example: "30" }
+
+  power:
+    label: Power
+    groups:
+      ups_pdu_specs:
+        label: UPS / PDU Specs
+        fields:
+          - { key: type, label: Type, field_type: text, placeholder: "UPS / PDU / Smart PDU / Surge protector" }
+          - { key: capacity, label: Capacity, field_type: text, example: "1500 VA / 900 W" }
+          - { key: battery_runtime_minutes, label: Battery runtime, field_type: text, example: "30" }
+          - { key: outlet_count, label: Outlet count, field_type: text, example: "8" }
+      load_monitoring:
+        label: Load Monitoring
+        fields:
+          - { key: current_load_w, label: Current load (W), field_type: text, example: "320" }
+          - { key: load_percent, label: Load %, field_type: text, example: "35" }
+          - { key: management_url, label: Management URL, field_type: url }
+      battery:
+        label: Battery
+        fields:
+          - { key: battery_model, label: Battery model, field_type: text, example: "RBC2" }
+          - { key: last_battery_replaced, label: Last battery replaced, field_type: date }
+          - { key: next_replacement_due, label: Next replacement due, field_type: date }
+
+  storage:
+    label: Storage
+    groups:
+      array_enclosure:
+        label: Array / Enclosure
+        fields:
+          - { key: type, label: Type, field_type: text, placeholder: "NAS / DAS / SAN / single drive" }
+          - { key: bay_count, label: Bay count, field_type: text, example: "4" }
+          - { key: raid_level, label: RAID level, field_type: text, example: "RAID 5 / ZFS RAIDZ / none" }
+          - { key: usable_capacity, label: Usable capacity, field_type: text, example: "12 TB" }
+          - { key: os_firmware, label: OS / firmware, field_type: text, example: "TrueNAS / Synology DSM / other" }
+          - { key: connected_to, label: Connected to, field_type: text }
+      drives_installed:
+        label: Drives Installed
+        fields:
+          - { key: drive_inventory, label: Drive inventory, field_type: textarea, placeholder: "One line per drive: bay, brand, model, capacity" }
+
+  laptops:
+    label: Laptops
+    groups:
+      hardware:
+        label: Hardware
+        fields:
+          - { key: cpu, label: CPU, field_type: text, example: "Apple M3 / Intel Core i7-1365U" }
+          - { key: ram_gb, label: RAM (GB), field_type: text, example: "16" }
+          - { key: storage, label: Storage, field_type: text, example: "512 GB SSD" }
+          - { key: screen_size, label: Screen size, field_type: text, example: '14"' }
+          - { key: battery_health_percent, label: Battery health %, field_type: text, example: "87" }
+          - { key: charger_wattage, label: Charger wattage, field_type: text, example: "67W" }
+      os:
+        label: OS
+        fields:
+          - { key: operating_system, label: Operating system, field_type: text, placeholder: "macOS / Windows / Linux" }
+          - { key: os_version, label: OS version, field_type: text, example: "Windows 11 24H2" }
+      support_assignment:
+        label: Support / Assignment
+        fields:
+          - { key: warranty_expiry, label: Warranty expiry, field_type: date }
+          - { key: assigned_to, label: Assigned to, field_type: text }
+
+  lxc_vms:
+    label: LXC & VMs
+    groups:
+      virtual_machine_config:
+        label: Virtual Machine Config
+        fields:
+          - { key: type, label: Type, field_type: text, placeholder: "LXC container / VM KVM / VM VMware / Docker container" }
+          - { key: hypervisor_host, label: Hypervisor host, field_type: text }
+          - { key: vcpus, label: vCPUs, field_type: text, example: "2" }
+          - { key: ram_allocated_gb, label: RAM allocated (GB), field_type: text, example: "4" }
+          - { key: disk_allocated_gb, label: Disk allocated (GB), field_type: text, example: "32" }
+          - { key: template_image, label: Template / image, field_type: text, example: "Ubuntu 24.04 LXC template" }
+      os:
+        label: OS
+        fields:
+          - { key: operating_system, label: Operating system, field_type: text, example: "Debian 12" }
+          - { key: os_version, label: OS version, field_type: text }
+      services:
+        label: Services
+        fields:
+          - { key: services_running, label: Services running, field_type: textarea, example: "Nginx, PostgreSQL, Home Assistant" }
+          - { key: exposed_ports, label: Exposed ports, field_type: text, example: "80, 443, 5432" }
+
+  cables_adapters:
+    label: Cables & Adapters
+    groups:
+      cable_adapter_details:
+        label: Cable / Adapter Details
+        fields:
+          - { key: type, label: Type, field_type: text, placeholder: "Cable / Adapter / Dongle / Extender / Splitter" }
+          - { key: specification, label: Specification, field_type: text, example: "Cat6 / HDMI 2.1 / USB4" }
+          - { key: connector_a, label: Connector A, field_type: text }
+          - { key: connector_b, label: Connector B, field_type: text }
+          - { key: length, label: Length, field_type: text, example: "1m / 5m / 0.3m" }
+          - { key: colour, label: Colour, field_type: text, example: "black" }
+          - { key: max_data_rate, label: Max data rate, field_type: text, example: "10 Gbps / 48 Gbps" }
+          - { key: max_power_delivery, label: Max power delivery, field_type: text, example: "100W PD" }
+      condition_storage:
+        label: Condition & Storage
+        fields:
+          - { key: condition, label: Condition, field_type: text, placeholder: "New / Good / Fair / Damaged" }
+          - { key: storage_location, label: Storage location, field_type: text }
+          - { key: quantity, label: Quantity, field_type: text, example: "3" }
+
+  iot_devices:
+    label: IoT Devices
+    groups:
+      device_details:
+        label: Device Details
+        fields:
+          - { key: protocol, label: Protocol, field_type: text, placeholder: "Zigbee / Z‑Wave / Matter / Wi‑Fi / Bluetooth / Thread / proprietary" }
+          - { key: hub_controller, label: Hub / controller, field_type: text }
+          - { key: device_id, label: Device ID, field_type: text }
+          - { key: firmware_version, label: Firmware version, field_type: text, example: "2.1.4" }
+      power:
+        label: Power
+        fields:
+          - { key: power_type, label: Power type, field_type: text, placeholder: "Mains / Battery / PoE / Solar" }
+          - { key: battery_type, label: Battery type, field_type: text, example: "AA / CR2032 / built-in LiPo" }
+          - { key: battery_level_percent, label: Battery level %, field_type: text, example: "87" }
+          - { key: last_battery_change, label: Last battery change, field_type: date }
+      placement:
+        label: Placement
+        fields:
+          - { key: room_zone, label: Room / zone, field_type: text }
+          - { key: mounted, label: Mounted, field_type: checkbox }
+          - { key: indoor_outdoor, label: Indoor / outdoor, field_type: text, placeholder: "indoor / outdoor / both" }
+      automation:
+        label: Automation
+        fields:
+          - { key: automations_linked, label: Automations linked, field_type: textarea, example: "3 — morning lights" }
+          - { key: dashboard_ui, label: Dashboard / UI, field_type: url }
+
+  media_gaming:
+    label: Media & Gaming
+    groups:
+      device_details:
+        label: Device Details
+        fields:
+          - { key: device_type, label: Device type, field_type: text, placeholder: "Games console / Smart speaker / Smart display / Streaming stick / Media server / Set-top box / Other" }
+          - { key: generation, label: Generation, field_type: text, example: "Xbox Series X / Wii U / Google Nest Hub 2nd Gen" }
+          - { key: storage_gb, label: Storage (GB), field_type: text, example: "512" }
+          - { key: expandable_storage, label: Expandable storage, field_type: text, example: "1 TB external HDD" }
+      gaming:
+        label: Gaming
+        fields:
+          - { key: platform, label: Platform, field_type: text, placeholder: "Xbox / PlayStation / Nintendo / PC / Other" }
+          - { key: backwards_compatibility, label: Backwards compat., field_type: text }
+          - { key: online_subscription, label: Online subscription, field_type: text, example: "Xbox Game Pass Ultimate — 2026-12-01" }
+          - { key: controller_count, label: Controller count, field_type: text, example: "2" }
+      smart_streaming:
+        label: Smart / Streaming
+        fields:
+          - { key: ecosystem, label: Ecosystem, field_type: text, placeholder: "Google / Amazon / Apple / Other" }
+          - { key: linked_account, label: Linked account, field_type: text }
+          - { key: display_size, label: Display size, field_type: text, example: '7"' }
+          - { key: voice_assistant, label: Voice assistant, field_type: text, placeholder: "Google Assistant / Alexa / Siri / none" }
+      connectivity:
+        label: Connectivity
+        fields:
+          - { key: hdmi_output, label: HDMI output, field_type: checkbox }
+          - { key: audio_output, label: Audio output, field_type: text, placeholder: "HDMI ARC / optical / 3.5mm / built-in only" }
+          - { key: connected_display, label: Connected display, field_type: text }
+
+  mobile_tablets:
+    label: Mobile & Tablets
+    groups:
+      device_details:
+        label: Device Details
+        fields:
+          - { key: device_type, label: Device type, field_type: text, placeholder: "Smartphone / Tablet / E-reader" }
+          - { key: os, label: OS, field_type: text, placeholder: "iOS / Android / iPadOS / other" }
+          - { key: os_version, label: OS version, field_type: text, example: "Android 15" }
+          - { key: storage_gb, label: Storage (GB), field_type: text, example: "256" }
+          - { key: screen_size, label: Screen size, field_type: text, example: '6.1"' }
+          - { key: colour, label: Colour, field_type: text, example: "Space Black" }
+      mobile:
+        label: Mobile
+        fields:
+          - { key: imei, label: IMEI, field_type: text }
+          - { key: carrier, label: Carrier, field_type: text, example: "EE / Vodafone / O2" }
+          - { key: plan_type, label: Plan type, field_type: text, placeholder: "Pay monthly / PAYG / SIM-free" }
+          - { key: plan_expiry, label: Plan expiry, field_type: date }
+          - { key: phone_number, label: Phone number, field_type: text }
+      support_assignment:
+        label: Support / Assignment
+        fields:
+          - { key: warranty_expiry, label: Warranty expiry, field_type: date }
+          - { key: assigned_to, label: Assigned to, field_type: text }
+          - { key: mdm_enrolled, label: MDM enrolled, field_type: checkbox }
+          - { key: mdm_platform, label: MDM platform, field_type: text, example: "Apple Business Manager / Intune" }
+      battery:
+        label: Battery
+        fields:
+          - { key: battery_health_percent, label: Battery health %, field_type: text, example: "91" }
+
+  pcs_workstations:
+    label: PCs & Workstations
+    groups:
+      hardware:
+        label: Hardware
+        fields:
+          - { key: form_factor, label: Form factor, field_type: text, placeholder: "Tower / SFF / Mini PC / All-in-one / Rack-mount" }
+          - { key: cpu, label: CPU, field_type: text, example: "AMD Ryzen 9 7950X / Intel Core i9-13900K" }
+          - { key: cpu_cores, label: CPU cores, field_type: text, example: "16" }
+          - { key: cpu_threads, label: CPU threads, field_type: text, example: "32" }
+          - { key: ram_total_gb, label: RAM total (GB), field_type: text, example: "64" }
+          - { key: ram_type, label: RAM type, field_type: text, example: "DDR5 6000MHz" }
+          - { key: gpu, label: GPU, field_type: text, example: "NVIDIA RTX 4080 / AMD RX 7900 XT / integrated" }
+          - { key: psu_wattage, label: PSU wattage, field_type: text, example: "850W" }
+      storage:
+        label: Storage
+        fields:
+          - { key: primary_drive, label: Primary drive, field_type: text, example: "2 TB Samsung 990 Pro NVMe" }
+          - { key: secondary_drives, label: Secondary drives, field_type: textarea, example: "4 TB HDD\n1 TB SSD" }
+          - { key: total_storage, label: Total storage, field_type: text, example: "7 TB" }
+      os_software:
+        label: OS / Software
+        fields:
+          - { key: operating_system, label: Operating system, field_type: text, placeholder: "Windows / Linux / macOS / dual-boot" }
+          - { key: os_version, label: OS version, field_type: text, example: "Windows 11 24H2 / Ubuntu 24.04" }
+      support_assignment:
+        label: Support / Assignment
+        fields:
+          - { key: warranty_expiry, label: Warranty expiry, field_type: date }
+          - { key: assigned_to, label: Assigned to, field_type: text }
+          - { key: remote_access, label: Remote access, field_type: text, placeholder: "RDP / VNC / SSH / none" }
+
+  peripherals:
+    label: Peripherals
+    groups:
+      device_details:
+        label: Device Details
+        fields:
+          - { key: peripheral_type, label: Peripheral type, field_type: text, placeholder: "Monitor / Keyboard / Mouse / Webcam / Microphone / Headset / Printer / Scanner / Drawing tablet / USB hub / KVM switch / DAC / Capture card / Other" }
+          - { key: connection, label: Connection, field_type: text, placeholder: "USB-A / USB-C / Thunderbolt / Bluetooth / 2.4GHz / DisplayPort / HDMI / PCIe / 3.5mm" }
+          - { key: connected_to, label: Connected to, field_type: text }
+          - { key: wireless, label: Wireless, field_type: checkbox }
+      monitor_specific:
+        label: Monitor-specific
+        fields:
+          - { key: screen_size, label: Screen size, field_type: text, example: '27"' }
+          - { key: resolution, label: Resolution, field_type: text, example: "2560x1440 / 4K" }
+          - { key: refresh_rate, label: Refresh rate, field_type: text, example: "144Hz" }
+          - { key: panel_type, label: Panel type, field_type: text, placeholder: "IPS / VA / OLED / TN" }
+          - { key: hdr, label: HDR, field_type: checkbox }
+          - { key: ports, label: Ports, field_type: textarea, example: "2x HDMI 2.1\n1x DP 1.4\n4x USB-A" }
+      printer_specific:
+        label: Printer-specific
+        fields:
+          - { key: print_type, label: Print type, field_type: text, placeholder: "Inkjet / Laser / Thermal" }
+          - { key: colour_printing, label: Colour, field_type: checkbox }
+          - { key: network_capable, label: Network capable, field_type: checkbox }
+          - { key: ink_toner_model, label: Ink / toner model, field_type: text, example: "PG-560XL / TN-2420" }
+      power:
+        label: Power
+        fields:
+          - { key: powered, label: Powered, field_type: text, placeholder: "Bus-powered / Mains / Battery" }
+          - { key: power_draw_w, label: Power draw (W), field_type: text, example: "35" }

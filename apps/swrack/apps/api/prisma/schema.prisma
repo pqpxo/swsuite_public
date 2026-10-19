@@ -1,0 +1,101 @@
+// version 24
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CabinetFace {
+  FRONT
+  REAR
+}
+
+enum EquipmentStatus {
+  ONLINE
+  OFFLINE
+  PLANNED
+  RETIRED
+}
+
+model Cabinet {
+  id                 String              @id @default(cuid())
+  slug               String              @unique
+  name               String
+  location           String?
+  heightU            Int                 @default(24)
+  widthType          String              @default("STANDARD_19_INCH")
+  depthMm            Int?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  equipmentInstances EquipmentInstance[]
+}
+
+model EquipmentTemplate {
+  id             String              @id @default(cuid())
+  slug           String              @unique
+  name           String
+  manufacturer   String?
+  model          String?
+  category       String              @default("General")
+  heightU        Float               @default(1)
+  widthRatio     String              @default("FULL")
+  frontAssetId   String?
+  rearAssetId    String?
+  specifications Json                @default("{}")
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  instances      EquipmentInstance[]
+}
+
+model EquipmentInstance {
+  id               String              @id @default(cuid())
+  cabinetId        String
+  templateId       String?
+  name             String
+  rackStartU       Float
+  heightU          Float
+  columnPosition   String              @default("FULL")
+  face             CabinetFace         @default(FRONT)
+  specifications   Json                @default("{}")
+  notes            String?
+  status           EquipmentStatus     @default(ONLINE)
+  imageAssetId     String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  cabinet          Cabinet             @relation(fields: [cabinetId], references: [id], onDelete: Cascade)
+  template         EquipmentTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  networkEndpoints NetworkEndpoint[]
+
+  @@index([cabinetId, face, rackStartU])
+}
+
+model NetworkEndpoint {
+  id                  String            @id @default(cuid())
+  equipmentInstanceId String
+  label               String
+  ipAddress           String?
+  port                Int?
+  protocol            String?
+  url                 String?
+  isPrimary           Boolean           @default(false)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  equipmentInstance   EquipmentInstance @relation(fields: [equipmentInstanceId], references: [id], onDelete: Cascade)
+
+  @@unique([equipmentInstanceId, label])
+}
+
+model ImageAsset {
+  id            String   @id
+  originalName  String
+  storageKey    String   @unique
+  mimeType      String
+  width         Int?
+  height        Int?
+  fileSizeBytes Int
+  checksum      String
+  createdAt     DateTime @default(now())
+}

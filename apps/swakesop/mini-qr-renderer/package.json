@@ -1,0 +1,16 @@
+{
+  "name": "mini-qr-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Render SWOps QR codes using a Mini QR exported config",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "canvas": "^3.2.0",
+    "express": "^5.1.0",
+    "jsdom": "^26.1.0",
+    "qr-code-styling": "^1.9.2"
+  }
+}

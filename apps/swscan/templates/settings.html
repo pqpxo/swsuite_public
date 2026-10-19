@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Settings · SWScan{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Settings</h1></header>
+<section class="panel narrow">
+  <form method="post">
+    <h2>Provider</h2>
+    <label>Default provider
+      <select name="provider">
+        {% for p, label in PROVIDER_LABELS.items() %}
+        <option value="{{ p }}" {{ 'selected' if vals.provider == p }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Anthropic API key<input type="password" name="anthropic_api_key" value="{{ vals.anthropic_api_key }}" autocomplete="off"></label>
+    <label>Anthropic model <small>(default {{ defaults.anthropic }})</small><input name="anthropic_model" value="{{ vals.anthropic_model }}"></label>
+    <label>OpenAI API key<input type="password" name="openai_api_key" value="{{ vals.openai_api_key }}" autocomplete="off"></label>
+    <label>OpenAI model <small>(default {{ defaults.openai }})</small><input name="openai_model" value="{{ vals.openai_model }}"></label>
+    <label>Gemini API key<input type="password" name="gemini_api_key" value="{{ vals.gemini_api_key }}" autocomplete="off"></label>
+    <label>Gemini model <small>(default {{ defaults.gemini }})</small><input name="gemini_model" value="{{ vals.gemini_model }}"></label>
+
+    <h2>Find images</h2>
+    <label>SearXNG base URL <small>(JSON format must be enabled on the instance)</small>
+      <input name="searxng_url" value="{{ vals.searxng_url }}" placeholder="https://searx.example.com"></label>
+
+    <h2>Pipeline</h2>
+    <div class="field-row">
+      <label>Scene threshold <small>(0.2 to 0.5)</small><input name="scene_threshold" value="{{ vals.scene_threshold or '0.30' }}"></label>
+      <label>Max frames<input name="max_frames" value="{{ vals.max_frames or '60' }}"></label>
+      <label>Dedupe distance <small>(dHash bits)</small><input name="dedupe_distance" value="{{ vals.dedupe_distance or '6' }}"></label>
+    </div>
+    <button class="btn primary">Save settings</button>
+  </form>
+</section>
+{% endblock %}

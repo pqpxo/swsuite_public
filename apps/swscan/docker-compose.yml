@@ -1,0 +1,9 @@
+services:
+  swscan:
+    build: .
+    container_name: swscan
+    ports:
+      - "7734:7734"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

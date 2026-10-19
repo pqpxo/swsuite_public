@@ -1,0 +1,202 @@
+<!-- version 9 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SWOps{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="layout-{{ layout_mode }}">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <a href="{{ url_for('index') }}" class="sidebar-brand">
+                    <img class="brand-logo" src="{{ url_for('static', filename='logo.png') }}" alt="SWOps logo">
+                    <div>
+                        <strong>SWOps</strong>
+                        <span>{{ sidebar_total_assets }} device{{ '' if sidebar_total_assets == 1 else 's' }}</span>
+                    </div>
+                </a>
+
+                <nav class="sidebar-nav top-nav-grid">
+                    <a class="nav-item nav-tile nav-tile-devices {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                        <span class="category-icon nav-tile-icon" style="--accent: #5c82ff">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect width="7" height="7" x="3" y="3" rx="1"/>
+                                <rect width="7" height="7" x="3" y="14" rx="1"/>
+                                <path d="M14 4h7"/>
+                                <path d="M14 9h7"/>
+                                <path d="M14 15h7"/>
+                                <path d="M14 20h7"/>
+                            </svg>
+                        </span>
+                        <span>All Devices</span>
+                    </a>
+
+                    <a class="nav-item nav-tile nav-tile-connections {% if request.endpoint == 'connection_map' %}active{% endif %}" href="{{ url_for('connection_map') }}">
+                        <span class="category-icon nav-tile-icon" style="--accent: #4f8cff">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </span>
+                        <span>Connections Map</span>
+                    </a>
+
+                    <a class="nav-item nav-tile nav-tile-categories {% if request.endpoint in ['category_list', 'category_edit'] %}active{% endif %}" href="{{ url_for('category_list') }}">
+                        <span class="category-icon nav-tile-icon" style="--accent: #4278f5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 5h18"/>
+                                <path d="M3 12h18"/>
+                                <path d="M3 19h18"/>
+                            </svg>
+                        </span>
+                        <span>Categories</span>
+                    </a>
+
+                    <a class="nav-item nav-tile nav-tile-settings {% if request.endpoint in ['settings_page', 'settings_update_qr_base_url', 'settings_backup', 'settings_restore', 'settings_custom_fields_add', 'settings_custom_fields_delete', 'settings_update_layout_mode'] %}active{% endif %}" href="{{ url_for('settings_page') }}">
+                        <span class="category-icon nav-tile-icon" style="--accent: #6a8cff">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 17v4"/>
+                                <path d="m14.305 7.53.923-.382"/>
+                                <path d="m15.228 4.852-.923-.383"/>
+                                <path d="m16.852 3.228-.383-.924"/>
+                                <path d="m16.852 8.772-.383.923"/>
+                                <path d="m19.148 3.228.383-.924"/>
+                                <path d="m19.53 9.696-.382-.924"/>
+                                <path d="m20.772 4.852.924-.383"/>
+                                <path d="m20.772 7.148.924.383"/>
+                                <path d="M22 13v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/>
+                                <path d="M8 21h8"/>
+                                <circle cx="18" cy="6" r="3"/>
+                            </svg>
+                        </span>
+                        <span>Settings</span>
+                    </a>
+
+                    <a class="nav-item nav-tile nav-tile-three-up" href="#" id="open-three-up-qr-modal" onclick="return false;">
+                    <span class="category-icon nav-tile-icon" style="--accent: #89a2ff">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect width="5" height="5" x="3" y="3" rx="1"/>
+                            <rect width="5" height="5" x="10" y="3" rx="1"/>
+                            <rect width="5" height="5" x="17" y="3" rx="1"/>
+                            <rect width="5" height="5" x="3" y="10" rx="1"/>
+                            <rect width="5" height="5" x="10" y="10" rx="1"/>
+                            <rect width="5" height="5" x="17" y="10" rx="1"/>
+                            <rect width="5" height="5" x="3" y="17" rx="1"/>
+                            <rect width="5" height="5" x="10" y="17" rx="1"/>
+                            <rect width="5" height="5" x="17" y="17" rx="1"/>
+                        </svg>
+                    </span>
+                    <span>QR Label</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <a href="{{ url_for('asset_new') }}" class="btn btn-primary btn-block">＋ Add Device</a>
+                    <button type="button" id="enable-notifications-btn" class="btn btn-secondary btn-block btn-small" style="display:none">🔔 Enable notifications</button>
+                </div>
+
+                <section class="sidebar-section">
+                    <div class="sidebar-section-title">Categories</div>
+                    <div class="sidebar-category-list">
+                        {% for row in sidebar_categories %}
+                            {% set category = row.category %}
+                            <a class="sidebar-category {% if request.endpoint == 'index' and request.args.get('category_id') == (category.id|string) %}active{% endif %}" href="{{ url_for('index', category_id=category.id) }}">
+                                <span class="category-icon" style="--accent: {{ category.color or '#4f8cff' }}">{{ category_icon_inner(category)|safe }}</span>
+                                <span class="category-name">{{ category.name }}</span>
+                                <span class="category-count">{{ row.asset_count }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <section class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </section>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ping_notifications_v1.js') }}"></script>
+
+    <div id="three-up-qr-modal" class="three-up-qr-modal" hidden>
+        <div class="three-up-qr-modal-overlay"></div>
+
+        <div class="three-up-qr-modal-card" role="dialog" aria-modal="true" aria-labelledby="three-up-qr-title">
+            <div class="three-up-qr-modal-header">
+                <div>
+                    <h2 id="three-up-qr-title">QR Label</h2>
+                    <p>Select 3 assets to generate a single 62x29mm label image with 3 QR codes.</p>
+                </div>
+                <button type="button" class="btn btn-small btn-secondary" id="close-three-up-qr-modal">Close</button>
+            </div>
+
+            <form id="three-up-qr-form" class="three-up-qr-form">
+                <div class="three-up-qr-grid">
+                    <label>
+                        <span>Asset 1</span>
+                        <select id="three-up-asset-1" required>
+                            <option value="">Select asset…</option>
+                            {% for nav_asset in three_up_qr_assets %}
+                                <option value="{{ nav_asset.id }}">{{ nav_asset.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Asset 2</span>
+                        <select id="three-up-asset-2" required>
+                            <option value="">Select asset…</option>
+                            {% for nav_asset in three_up_qr_assets %}
+                                <option value="{{ nav_asset.id }}">{{ nav_asset.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Asset 3</span>
+                        <select id="three-up-asset-3" required>
+                            <option value="">Select asset…</option>
+                            {% for nav_asset in three_up_qr_assets %}
+                                <option value="{{ nav_asset.id }}">{{ nav_asset.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                <div id="three-up-qr-status" class="three-up-qr-status" data-state="info" hidden></div>
+
+                <div id="three-up-preview-wrap" class="three-up-preview-wrap" hidden>
+                    <img id="three-up-preview-image" src="" alt="3-up QR label preview">
+                    <div class="three-up-preview-meta">
+                        <span>Generated image URL</span>
+                        <a id="three-up-image-url" href="#" target="_blank" rel="noopener"></a>
+                    </div>
+                </div>
+
+                <div class="three-up-qr-actions">
+                    <button type="submit" class="btn btn-small btn-primary" id="three-up-generate-btn">Generate</button>
+                    <a href="#" class="btn btn-small btn-secondary is-disabled" id="three-up-download-btn" aria-disabled="true">Download</a>
+                    <button type="button" class="btn btn-small btn-primary" id="three-up-send-btn" disabled>Send to printer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/three_up_qr_label_v2.js') }}"></script>
+</body>
+</html>

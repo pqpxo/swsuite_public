@@ -1,0 +1,505 @@
+<!-- ## version 13 -->
+{% extends "base.html" %}
+
+{% macro card_icon(label) -%}
+  {% set key = label|lower %}
+  {% if key == 'device information' %}🖥️
+  {% elif key == 'network' %}🌐
+  {% elif key == 'hardware specs' %}⚙️
+  {% elif key in ['os / software', 'os/software'] %}💿
+  {% elif key == 'storage' %}💾
+  {% elif key == 'support' %}🛡️
+  {% elif key == 'recording' %}⏺️
+  {% elif key == 'connectivity' %}🔌
+  {% elif key in ['optics & sensor', 'optics and sensor'] %}📷
+  {% elif key == 'power' %}⚡
+  {% elif key == 'drives installed' %}🗄️
+  {% elif key == 'array / enclosure' %}🧰
+  {% elif key == 'virtual machine config' %}🧊
+  {% elif key == 'services' %}🧩
+  {% elif key == 'automation' %}🤖
+  {% elif key == 'placement' %}📍
+  {% elif key == 'battery' %}🔋
+  {% elif key == 'management' %}🧭
+  {% elif key == 'board' %}🧠
+  {% elif key == 'device details' %}📦
+  {% elif key == 'cable / adapter details' %}🧵
+  {% elif key == 'condition & storage' %}📥
+  {% elif key == 'ups / pdu specs' %}🔌
+  {% elif key == 'load monitoring' %}📈
+  {% elif key == 'hardware' %}🛠️
+  {% elif key == 'gaming' %}🎮
+  {% elif key == 'smart / streaming' %}📺
+  {% elif key == 'mobile' %}📱
+  {% elif key == 'monitor-specific' %}🖥️
+  {% elif key == 'printer-specific' %}🖨️
+  {% else %}◦
+  {% endif %}
+{%- endmacro %}
+
+{% macro render_field_item(field, item_class='category-item') -%}
+  {% set is_wide = field.wide or field.field_type == 'textarea' %}
+  <div class="{{ item_class }} {{ 'wide' if is_wide else '' }}">
+    <span class="{{ item_class }}-label">{{ field.label }}</span>
+    {% if field.field_type == 'url' and field.raw %}
+      <div class="{{ item_class }}-value">
+        <a href="{{ field.raw }}" target="_blank" rel="noopener">{{ field.raw }}</a>
+      </div>
+    {% else %}
+      <div class="{{ item_class }}-value {{ 'notes-value' if field.field_type == 'textarea' else '' }}">{{ field.value }}</div>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro render_generic_group(group, extra_class='') -%}
+  {% set non_wide = group.fields|rejectattr('wide')|list|length %}
+  {% set can_three = non_wide in [3, 6] and (group.fields|selectattr('wide')|list|length == 0) %}
+  {% set empty_ns = namespace(all_empty=true) %}
+  {% for field in group.fields %}
+    {% if field.value and field.value != '—' %}{% set empty_ns.all_empty = false %}{% endif %}
+  {% endfor %}
+  {% if empty_ns.all_empty %}
+  <details class="content-card asset-section-card {{ extra_class }} collapsible-card">
+    <summary class="asset-card-head collapsible-summary">
+      <h2>{{ group.label }}</h2>
+      <div class="collapsible-summary-end">
+        <span class="asset-card-icon">{{ card_icon(group.label) }}</span>
+        <span class="collapsible-chevron">▾</span>
+      </div>
+    </summary>
+    <div class="category-grid relayout-grid {{ 'compact-3' if can_three else '' }}">
+      {% for field in group.fields %}
+        {{ render_field_item(field) }}
+      {% endfor %}
+    </div>
+  </details>
+  {% else %}
+  <section class="content-card asset-section-card {{ extra_class }}">
+    <div class="asset-card-head">
+      <h2>{{ group.label }}</h2>
+      <span class="asset-card-icon">{{ card_icon(group.label) }}</span>
+    </div>
+    <div class="category-grid relayout-grid {{ 'compact-3' if can_three else '' }}">
+      {% for field in group.fields %}
+        {{ render_field_item(field) }}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{%- endmacro %}
+
+{% macro render_group_card(group, extra_class='') -%}
+  {% set group_key = group.label|lower %}
+  {% if group_key == 'hardware specs' %}
+    <section class="content-card asset-section-card {{ extra_class }}">
+      <div class="asset-card-head">
+        <h2>{{ group.label }}</h2>
+        <span class="asset-card-icon">{{ card_icon(group.label) }}</span>
+      </div>
+      <div class="metric-band">
+        {% for wanted in ['cpu cores', 'ram total (gb)', 'ram (gb)', 'ram slots used', 'ram slots', 'psu wattage'] %}
+          {% for field in group.fields %}
+            {% if field.label|lower == wanted %}
+              <div class="metric-tile">
+                <span class="metric-label">{{ field.label }}</span>
+                <strong class="metric-value">{{ field.value }}</strong>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% set detail_fields = [] %}
+      <div class="category-grid relayout-grid {{ 'compact-3' if false else '' }}">
+        {% for field in group.fields %}
+          {% set key = field.label|lower %}
+          {% if key not in ['cpu cores', 'ram total (gb)', 'ram (gb)', 'ram slots used', 'ram slots', 'psu wattage'] %}
+            {{ render_field_item(field) }}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+  {% elif group_key in ['os / software', 'os/software'] %}
+    <section class="content-card asset-section-card {{ extra_class }}">
+      <div class="asset-card-head">
+        <h2>{{ group.label }}</h2>
+        <span class="asset-card-icon">{{ card_icon(group.label) }}</span>
+      </div>
+      {% set os_meta = namespace(name='', version='') %}
+      {% for field in group.fields %}
+        {% if field.label|lower in ['operating system', 'os'] and not os_meta.name %}
+          {% set os_meta.name = field.value %}
+        {% elif field.label|lower == 'os version' and not os_meta.version %}
+          {% set os_meta.version = field.value %}
+        {% endif %}
+      {% endfor %}
+      <div class="os-badge-panel">
+        <div class="os-badge-icon">▣</div>
+        <div class="os-badge-copy">
+          <strong>{{ os_meta.name or 'Operating System' }}</strong>
+          <span>{{ os_meta.version or '—' }}</span>
+        </div>
+      </div>
+      <div class="category-grid relayout-grid os-grid-balanced">
+        {% for field in group.fields %}
+          {% if field.label|lower not in ['operating system', 'os', 'os version'] %}
+            {{ render_field_item(field) }}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+
+  {% elif group_key == 'storage' %}
+    <section class="content-card asset-section-card {{ extra_class }}">
+      <div class="asset-card-head">
+        <h2>{{ group.label }}</h2>
+        <span class="asset-card-icon">{{ card_icon(group.label) }}</span>
+      </div>
+      {% set storage_meta = namespace(total='') %}
+      {% for field in group.fields %}
+        {% if field.label|lower in ['storage total', 'usable capacity', 'total storage'] and not storage_meta.total %}
+          {% set storage_meta.total = field.value %}
+        {% endif %}
+      {% endfor %}
+      <div class="storage-summary">
+        <div class="storage-summary-copy">
+          <span class="storage-kicker">Total Capacity</span>
+          <div class="storage-bar"><span></span></div>
+        </div>
+        <div class="storage-total">{{ storage_meta.total or '—' }}</div>
+      </div>
+      {% set remaining = group.fields|rejectattr('label', 'equalto', 'Storage total')|rejectattr('label', 'equalto', 'Usable capacity')|rejectattr('label', 'equalto', 'Total storage')|list %}
+      {% set non_wide = remaining|rejectattr('wide')|list|length %}
+      {% set can_three = non_wide in [3,6] and (remaining|selectattr('wide')|list|length == 0) %}
+      <div class="category-grid relayout-grid {{ 'compact-3' if can_three else '' }}">
+        {% for field in group.fields %}
+          {% if field.label|lower not in ['storage total', 'usable capacity', 'total storage'] %}
+            {{ render_field_item(field) }}
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+  {% else %}
+    {{ render_generic_group(group, extra_class) }}
+  {% endif %}
+{%- endmacro %}
+
+{% block content %}
+{% set current_status = asset_status(asset) %}
+{% set status_class = 'status-online' if current_status == 'Online' else 'status-offline' if current_status == 'Offline' else 'status-checking' if current_status == 'Checking' else 'status-retired' if current_status == 'Retired' else 'status-unknown' %}
+{% set ns = namespace(tags='') %}
+{% set group_ns = namespace(main=[], support=None) %}
+
+{% if universal_groups %}
+  {% for group in universal_groups %}
+    {% for field in group.fields %}
+      {% if field.label|lower == 'tags' and not ns.tags %}
+        {% set ns.tags = field.value %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+{% endif %}
+
+{% if category_groups %}
+  {% for group in category_groups %}
+    {% if group.label|lower == 'support' %}
+      {% set group_ns.support = group %}
+    {% else %}
+      {% set group_ns.main = group_ns.main + [group] %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+<div class="asset-page-shell asset-redesign-shell">
+  <div class="asset-breadcrumbs topbar-breadcrumbs">
+    {% for crumb in trail %}
+      {% if not loop.last %}
+        {% if not loop.first %}<span class="crumb-sep">›</span>{% endif %}
+        <a href="{{ url_for('asset_detail', asset_key=crumb.asset_key) }}">{{ crumb.name }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="asset-hero-row">
+    <section class="asset-hero-panel">
+      <div class="asset-header-photo hero-photo">
+        {% if asset.photos %}
+          <img src="{{ url_for('uploaded_file', filename=asset.photos[0].filename) }}" alt="{{ asset.name }}">
+        {% else %}
+          <div class="asset-header-photo-placeholder">No photo</div>
+        {% endif %}
+      </div>
+      <div class="asset-detail-top">
+        <div class="asset-hero-copy">
+          <h1>{{ asset.name }}</h1>
+          <div class="asset-meta-row">
+            {% if asset.category %}<span class="asset-chip">{{ asset.category.name }}</span>{% endif %}
+            <span class="asset-chip status-chip {{ status_class }}">{{ current_status }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="asset-action-row">
+      <a
+        class="btn btn-small asset-action-qr"
+        href="{{ url_for('asset_qr', asset_key=asset.asset_key) }}"
+        data-qr-trigger
+        data-qr-image="{{ url_for('asset_qr', asset_key=asset.asset_key) }}"
+        data-qr-link="{{ public_url }}"
+        data-qr-filename="{{ (asset.name or asset.asset_key)|replace(' ', '_') }}_qr.png"
+        onclick="return window.openQrModalFromLink(this, event);"
+      >QR Code</a>
+      <a class="btn btn-small btn-primary" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" onsubmit="return confirm('Delete this asset?');">
+        <button type="submit" class="btn btn-small btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="asset-row asset-row-dual">
+    <section class="content-card asset-section-card">
+      <div class="asset-card-head">
+        <h2>Device Information</h2>
+        <span class="asset-card-icon">{{ card_icon('Device Information') }}</span>
+      </div>
+      <div class="detail-info-grid relayout-grid">
+        <div class="detail-item">
+          <span class="detail-item-label">Brand</span>
+          <div class="detail-item-value">{{ asset.brand or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Model</span>
+          <div class="detail-item-value">{{ asset.model or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Serial Number</span>
+          <div class="detail-item-value">{{ asset.serial_number or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Location</span>
+          <div class="detail-item-value">{{ asset.location or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Parent Device</span>
+          <div class="detail-item-value">
+            {% if asset.parent_asset %}
+              <a href="{{ url_for('asset_detail', asset_key=asset.parent_asset.asset_key) }}">{{ asset.parent_asset.name }}</a>
+            {% else %}—{% endif %}
+          </div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Use / Role</span>
+          <div class="detail-item-value">{{ asset.use_case or '—' }}</div>
+        </div>
+        <div class="detail-item wide">
+          <span class="detail-item-label">Tags</span>
+          <div class="detail-item-value">{{ ns.tags or '—' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-card asset-section-card">
+      <div class="asset-card-head">
+        <h2>Network</h2>
+        <span class="asset-card-icon">{{ card_icon('Network') }}</span>
+      </div>
+      <div class="detail-info-grid relayout-grid">
+        <div class="detail-item">
+          <span class="detail-item-label">Hostname</span>
+          <div class="detail-item-value">{{ asset.hostname or '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">IP Address</span>
+          <div class="detail-item-value">
+            {% if asset.ip_address %}
+              <span class="copy-wrap">
+                <span>{{ asset.ip_address }}</span>
+                <button class="copy-btn" data-copy="{{ asset.ip_address }}" title="Copy IP address" type="button">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                </button>
+              </span>
+            {% else %}—{% endif %}
+          </div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Domain URL</span>
+          <div class="detail-item-value">{% if asset.domain_url %}<a href="{{ normalise_url(asset.domain_url) or asset.domain_url }}" target="_blank" rel="noopener">{{ asset.domain_url }}</a>{% else %}—{% endif %}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">QR Target</span>
+          <div class="detail-item-value"><a href="{{ public_url }}" target="_blank" rel="noopener">Open inventory page</a></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Ping Check</span>
+          <div class="detail-item-value"><span class="mini-status-pill {{ 'is-enabled' if asset.ping_enabled else 'is-disabled' }}">{{ 'Enabled' if asset.ping_enabled else 'Disabled' }}</span></div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Ping Interval</span>
+          <div class="detail-item-value">{{ asset.ping_interval_minutes or '—' }} min</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Last Ping Check</span>
+          <div class="detail-item-value">{{ asset.last_ping_checked_at.strftime('%Y-%m-%d %H:%M') if asset.last_ping_checked_at else '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <span class="detail-item-label">Last Ping Result</span>
+          <div class="detail-item-value">{{ asset.last_ping_status or '—' }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  {% set count = group_ns.main|length %}
+  {% if count == 1 %}
+    <div class="asset-row asset-row-dual">
+      {{ render_group_card(group_ns.main[0]) }}
+      <div class="asset-row-spacer"></div>
+    </div>
+  {% elif count == 2 %}
+    <div class="asset-row asset-row-dual">
+      {{ render_group_card(group_ns.main[0]) }}
+      {{ render_group_card(group_ns.main[1]) }}
+    </div>
+  {% elif count == 3 %}
+    <div class="asset-row asset-row-triple">
+      {{ render_group_card(group_ns.main[0]) }}
+      {{ render_group_card(group_ns.main[1]) }}
+      {{ render_group_card(group_ns.main[2]) }}
+    </div>
+  {% elif count == 4 %}
+    <div class="asset-row asset-row-dual">
+      {{ render_group_card(group_ns.main[0]) }}
+      {{ render_group_card(group_ns.main[1]) }}
+    </div>
+    <div class="asset-row asset-row-dual">
+      {{ render_group_card(group_ns.main[2]) }}
+      {{ render_group_card(group_ns.main[3]) }}
+    </div>
+  {% elif count == 5 %}
+    <div class="asset-row asset-row-triple">
+      {{ render_group_card(group_ns.main[0]) }}
+      {{ render_group_card(group_ns.main[1]) }}
+      {{ render_group_card(group_ns.main[2]) }}
+    </div>
+    <div class="asset-row asset-row-dual">
+      {{ render_group_card(group_ns.main[3]) }}
+      {{ render_group_card(group_ns.main[4]) }}
+    </div>
+  {% elif count >= 6 %}
+    {% for i in range(0, count, 3) %}
+      {% set chunk = group_ns.main[i:i+3] %}
+      {% if chunk|length == 3 %}
+        <div class="asset-row asset-row-triple">
+          {{ render_group_card(chunk[0]) }}
+          {{ render_group_card(chunk[1]) }}
+          {{ render_group_card(chunk[2]) }}
+        </div>
+      {% elif chunk|length == 2 %}
+        <div class="asset-row asset-row-dual">
+          {{ render_group_card(chunk[0]) }}
+          {{ render_group_card(chunk[1]) }}
+        </div>
+      {% else %}
+        <div class="asset-row asset-row-dual">
+          {{ render_group_card(chunk[0]) }}
+          <div class="asset-row-spacer"></div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <details class="content-card timeline-card asset-section-card collapsible-card">
+    <summary class="asset-card-head collapsible-summary">
+      <h2>Lifecycle Timeline</h2>
+      <div class="collapsible-summary-end">
+        <span class="asset-card-icon">🗓️</span>
+        <span class="collapsible-chevron">▾</span>
+      </div>
+    </summary>
+    <div class="timeline-modern">
+      {% set timeline_items = [
+        ('Purchased', asset.date_purchased, '🛒'),
+        ('Installed', asset.date_installed, '🔧'),
+        ('Repaired', asset.date_repaired, '🩹'),
+        ('Fixed', asset.date_fixed, '✅'),
+        ('Retire Date', asset.retire_date, '📦')
+      ] %}
+      {% for label, value, icon in timeline_items %}
+        <div class="timeline-modern-item {{ 'is-complete' if value else 'is-pending' }}">
+          <div class="timeline-modern-dot"><span>{{ icon }}</span></div>
+          <div class="timeline-modern-label">{{ label }}</div>
+          <div class="timeline-modern-date">{{ value|date_or_dash }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </details>
+
+  {% if group_ns.support %}
+    <div class="asset-row asset-row-dual asset-bottom-row">
+      {{ render_group_card(group_ns.support) }}
+      <section class="content-card notes-card asset-section-card">
+        <div class="asset-card-head">
+          <h2>Notes</h2>
+          <span class="asset-card-icon">📝</span>
+        </div>
+        <div class="notes-display">{{ asset.notes if asset.notes else 'No notes added yet.' }}</div>
+      </section>
+    </div>
+  {% else %}
+    <section class="content-card notes-card asset-section-card">
+      <div class="asset-card-head">
+        <h2>Notes</h2>
+        <span class="asset-card-icon">📝</span>
+      </div>
+      <div class="notes-display">{{ asset.notes if asset.notes else 'No notes added yet.' }}</div>
+    </section>
+  {% endif %}
+
+  {% if asset.ping_enabled and asset.ip_address %}
+  <section class="content-card asset-section-card ping-chart-card">
+    <div class="asset-card-head">
+      <h2>Ping History</h2>
+      <span class="asset-card-icon">📡</span>
+    </div>
+    <div id="ping-chart" data-asset-id="{{ asset.id }}">
+      <span class="muted-copy ping-chart-loading">Loading…</span>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if change_logs %}
+  <section class="content-card asset-section-card changelog-card">
+  <div class="asset-card-head">
+    <h2>Change Log</h2>
+    <span class="asset-card-icon">🕓</span>
+  </div>
+  <div class="changelog-list">
+    {% set ns = namespace(last_date=None) %}
+    {% for entry in change_logs %}
+      {% set entry_date = entry.changed_at.strftime('%d %b %Y') %}
+      {% if entry_date != ns.last_date %}
+        <div class="changelog-date-heading">{{ entry_date }}</div>
+        {% set ns.last_date = entry_date %}
+      {% endif %}
+      <div class="changelog-row">
+        <span class="changelog-time">{{ entry.changed_at.strftime('%H:%M') }}</span>
+        <span class="changelog-field">{{ entry.field_name }}</span>
+        <span class="changelog-change">
+          {% if entry.old_value %}
+            <span class="changelog-old">{{ entry.old_value }}</span>
+            <span class="changelog-arrow">→</span>
+          {% endif %}
+          <span class="changelog-new">{{ entry.new_value or '—' }}</span>
+        </span>
+      </div>
+    {% endfor %}
+  </div>
+  </section>
+  {% endif %}
+</div>
+
+<script src="{{ url_for('static', filename='js/qr_modal_v2.js') }}"></script>
+{% if asset.ping_enabled and asset.ip_address %}
+<script src="{{ url_for('static', filename='js/asset_ping_chart_v1.js') }}"></script>
+{% endif %}
+{% endblock %}

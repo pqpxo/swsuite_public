@@ -1,0 +1,127 @@
+{# version 6 #}
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Host' if host else 'Add Host' }} — SWKick{% endblock %}
+{% block body %}
+<main class="content">
+  <div class="page-heading">
+    <div>
+      <h1>{{ 'Edit host' if host else 'Add host' }}</h1>
+      <p>{{ 'Update host connection details and group assignments.' if host else 'Configure an SSH connection for update monitoring.' }}</p>
+    </div>
+    <a class="chip" href="{{ base }}/hosts">← Hosts</a>
+  </div>
+
+  <form class="card section-card" method="post" action="{{ base }}{{ '/hosts/' ~ host['id'] ~ '/edit' if host else '/hosts/new' }}">
+    <label>Name<input name="name" value="{{ host['name'] if host else '' }}" required></label>
+    <label>Hostname / IP<input name="hostname" value="{{ host['hostname'] if host else '' }}" required></label>
+    <label>SSH port<input name="ssh_port" type="number" min="1" max="65535"
+                          value="{{ host['ssh_port'] if host else 22 }}" required></label>
+    <label>SSH username<input name="ssh_username"
+                             value="{{ host['ssh_username'] if host else '' }}" required></label>
+    <label>OS label<input name="os_label" placeholder="Ubuntu 24.04"
+                         value="{{ (host['os_label'] or '') if host else '' }}"></label>
+
+    <div class="host-credential-row">
+      <label for="host-credential">Credential
+        <select id="host-credential" name="credential_id">
+          <option value="">(none)</option>
+          {% for c in credentials %}
+          <option value="{{ c['id'] }}" {{ 'selected' if host and host['credential_id'] == c['id'] else '' }}>{{ c['name'] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="button" class="chip create-credential-button" onclick="openCredentialDialog()"
+              aria-haspopup="dialog" aria-controls="quick-credential-dialog">+ New Credential</button>
+    </div>
+
+    <div class="group-settings-top">
+      <strong>Groups</strong>
+      <a href="{{ base }}/groups" target="_blank" rel="noopener">Manage groups ↗</a>
+    </div>
+    <p class="muted small group-help">Assign existing groups or create a new one here. Removing a group deletes it for every host.</p>
+    <div class="checks group-checks" id="host-group-list">
+      {% for g in groups %}
+      <div class="group-choice" data-group-id="{{ g['id'] }}">
+        <label class="check" for="host-group-{{ g['id'] }}">
+          <input id="host-group-{{ g['id'] }}" type="checkbox" name="group_ids"
+                 value="{{ g['id'] }}" {{ 'checked' if g['id'] in selected_groups else '' }}>
+          <span>{{ g['dimension'].replace('_', ' ').title() }}: {{ g['name'] }}</span>
+        </label>
+        <button type="button" class="group-remove" title="Delete group for all hosts"
+                aria-label="Delete {{ g['name'] }} group"
+                onclick='removeHostGroup({{ g["id"] }}, {{ (g["dimension"].replace("_", " ").title() ~ ": " ~ g["name"]) | tojson }})'>×</button>
+      </div>
+      {% endfor %}
+    </div>
+    <div id="host-group-empty" class="muted small" {% if groups %}hidden{% endif %}>No groups created yet.</div>
+    <div class="quick-group-create">
+      <label for="quick-group-dimension">Group type
+        <select id="quick-group-dimension">
+          <option value="priority">Priority</option>
+          <option value="host_type">Host Type</option>
+          <option value="device_type">Device Type</option>
+        </select>
+      </label>
+      <label for="quick-group-name">New group name
+        <input id="quick-group-name" maxlength="80" placeholder="e.g. Bare Metal">
+      </label>
+      <button class="chip" type="button" onclick="addHostGroup(this)">+ Create group</button>
+    </div>
+
+    <div class="page-actions form-actions">
+      <button class="btn-primary" type="submit">{{ 'Save changes' if host else 'Save host' }}</button>
+      <a class="chip" href="{{ base }}/hosts">Cancel</a>
+    </div>
+  </form>
+</main>
+
+{# Separate dialog form prevents submitting or resetting the unfinished host form. #}
+<dialog id="quick-credential-dialog" class="credential-dialog"
+        aria-labelledby="quick-credential-heading" aria-describedby="quick-credential-description">
+  <div class="credential-dialog-heading">
+    <div><h2 id="quick-credential-heading">New Credential</h2>
+      <p id="quick-credential-description" class="muted small">Save a credential without losing any host details.</p>
+    </div>
+    <button type="button" class="dialog-close" onclick="closeCredentialDialog()" aria-label="Close dialog">×</button>
+  </div>
+  <form id="quick-credential-form" method="post" action="{{ base }}/credentials/quick-create"
+        onsubmit="saveQuickCredential(event)">
+    <label for="quick-credential-name">Name
+      <input id="quick-credential-name" name="name" maxlength="100"
+             placeholder="e.g. Primary SSH Key" autocomplete="off" required>
+    </label>
+    <label for="quick-credential-type">Type
+      <select id="quick-credential-type" name="type" onchange="syncQuickCredentialFields()" required>
+        <option value="password">Password</option>
+        <option value="ssh_key">SSH Key</option>
+      </select>
+    </label>
+    <div id="quick-credential-password-fields" data-quick-credential-type="password">
+      <label for="quick-credential-password">Login Password
+        <input id="quick-credential-password" name="password" type="password"
+               autocomplete="new-password" required>
+      </label>
+    </div>
+    <div id="quick-credential-key-fields" data-quick-credential-type="ssh_key" hidden>
+      <label for="quick-credential-private-key">SSH Private Key
+        <textarea id="quick-credential-private-key" name="private_key" rows="5"
+                  placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                  spellcheck="false" disabled></textarea>
+      </label>
+      <label for="quick-credential-passphrase">Key Passphrase
+        <input id="quick-credential-passphrase" name="passphrase" type="password"
+               autocomplete="new-password" disabled>
+      </label>
+    </div>
+    <label for="quick-credential-sudo-password">Sudo Password
+      <input id="quick-credential-sudo-password" name="sudo_password" type="password"
+             autocomplete="new-password" placeholder="Optional">
+    </label>
+    <p class="credential-dialog-error" id="quick-credential-error" role="alert" hidden></p>
+    <div class="page-actions form-actions">
+      <button type="submit" class="btn-primary" id="quick-credential-save">Save Credential</button>
+      <button type="button" class="chip" onclick="closeCredentialDialog()">Cancel</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

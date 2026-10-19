@@ -1,0 +1,292 @@
+<!-- ## version 6 -->
+{% extends "base.html" %}
+
+{% macro custom_field_input(field) -%}
+  {% set field_name = 'custom_' ~ field.id %}
+  {% set field_type = field.field_type or 'text' %}
+  {% set field_label = field.label or field.name %}
+  {% set placeholder = field.placeholder or '' %}
+  <div class="form-field-wrap {{ 'full-width' if field.wide else '' }}">
+    <label>
+      <span>{{ field_label }}</span>
+      {% if field_type == 'textarea' %}
+        <textarea name="{{ field_name }}" rows="4" placeholder="{{ placeholder }}">{{ field.value or '' }}</textarea>
+      {% elif field_type == 'date' %}
+        <input type="date" name="{{ field_name }}" value="{{ field.value or '' }}">
+      {% elif field_type == 'url' %}
+        <input type="url" name="{{ field_name }}" value="{{ field.value or '' }}" placeholder="{{ placeholder }}">
+      {% elif field_type == 'checkbox' %}
+        <span class="checkbox-row">
+          <input type="checkbox" name="{{ field_name }}" value="1" {% if field.value == '1' %}checked{% endif %}>
+          <span>{{ placeholder or 'Enabled' }}</span>
+        </span>
+      {% else %}
+        <input type="text" name="{{ field_name }}" value="{{ field.value or '' }}" placeholder="{{ placeholder }}">
+      {% endif %}
+    </label>
+  </div>
+{%- endmacro %}
+
+{% block content %}
+{% set cancel_href = url_for('asset_detail', asset_key=asset.asset_key) if asset else url_for('index') %}
+
+<div class="page-shell stack-layout asset-form-shell">
+  <div class="page-header-row asset-form-header">
+    <div>
+      <h1>{{ title }}</h1>
+      <p class="page-subtitle">{{ 'Update the asset details below.' if asset else 'Add a new asset and save when ready.' }}</p>
+    </div>
+    <div class="asset-form-actions-top">
+      <a class="btn btn-small btn-secondary" href="{{ cancel_href }}">Cancel</a>
+      <button type="submit" form="asset-form-main" class="btn btn-small btn-primary">Save</button>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="asset-form-layout-grid" id="asset-form-main">
+    {{ form.hidden_tag() }}
+
+    <section class="content-card asset-form-card">
+      <div class="asset-card-head">
+        <h2>Core</h2>
+      </div>
+      <div class="form-grid">
+        <label>
+          <span>Name</span>
+          {{ form.name() }}
+        </label>
+        <label>
+          <span>Category</span>
+          {{ form.category_id(id='category_id', data_role='asset-category') }}
+        </label>
+        <label id="server-subcategory-wrap" style="display:none">
+          <span>Server Type</span>
+          <select name="subcategory" id="server-subcategory-select">
+            <option value="">— Select type —</option>
+            <option value="physical_host" {% if subcategory == 'physical_host' %}selected{% endif %}>Physical Host</option>
+            <option value="hypervisor" {% if subcategory == 'hypervisor' %}selected{% endif %}>Hypervisor</option>
+            <option value="virtual_machine" {% if subcategory == 'virtual_machine' %}selected{% endif %}>Virtual Machine</option>
+            <option value="lxc_container" {% if subcategory == 'lxc_container' %}selected{% endif %}>LXC Container</option>
+            <option value="docker_host" {% if subcategory == 'docker_host' %}selected{% endif %}>Docker Host</option>
+          </select>
+        </label>
+        <label>
+          <span>Brand</span>
+          {{ form.brand(list='brand-values') }}
+          <datalist id="brand-values">{% for value in brand_values %}<option value="{{ value }}">{% endfor %}</datalist>
+        </label>
+        <label>
+          <span>Model</span>
+          {{ form.model() }}
+        </label>
+        <label>
+          <span>Serial number</span>
+          {{ form.serial_number() }}
+        </label>
+        <label>
+          <span>Location</span>
+          {{ form.location(list='location-values') }}
+          <datalist id="location-values">{% for value in location_values %}<option value="{{ value }}">{% endfor %}</datalist>
+        </label>
+        <label>
+          <span>Parent asset</span>
+          {{ form.parent_asset_id() }}
+        </label>
+        <label>
+          <span>Use / role</span>
+          {{ form.use_case(rows='3') }}
+        </label>
+        <label class="full-width">
+          <span>Related URLs</span>
+          {{ form.related_urls(rows='3') }}
+        </label>
+        <label class="full-width">
+          <span>Notes</span>
+          {{ form.notes(rows='5') }}
+        </label>
+      </div>
+    </section>
+
+    <section class="content-card asset-form-card">
+      <div class="asset-card-head">
+        <h2>Network</h2>
+      </div>
+      <div class="form-grid">
+        <label>
+          <span>Hostname</span>
+          {{ form.hostname() }}
+        </label>
+        <label>
+          <span>IP address</span>
+          {{ form.ip_address() }}
+        </label>
+        <label>
+          <span>Domain URL</span>
+          {{ form.domain_url() }}
+        </label>
+        <label>
+          <span>Ping interval (minutes)</span>
+          {{ form.ping_interval_minutes() }}
+        </label>
+      </div>
+      <div class="toggle-grid" style="margin-top: 16px; grid-template-columns: repeat(3, 1fr);">
+        <label class="toggle-card">
+          {{ form.ping_enabled() }}
+          <span>Enable ping monitoring</span>
+        </label>
+        <label class="toggle-card">
+          {{ form.requires_attention() }}
+          <span>Requires attention</span>
+        </label>
+        <label class="toggle-card">
+          {{ form.requires_update() }}
+          <span>Requires update</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="content-card asset-form-card">
+      <div class="asset-card-head">
+        <h2>Timeline</h2>
+      </div>
+      <div class="form-grid">
+        <label><span>Date purchased</span>{{ form.date_purchased() }}</label>
+        <label><span>Date installed</span>{{ form.date_installed() }}</label>
+        <label><span>Date repaired</span>{{ form.date_repaired() }}</label>
+        <label><span>Date fixed</span>{{ form.date_fixed() }}</label>
+        <label><span>Retire date</span>{{ form.retire_date() }}</label>
+      </div>
+    </section>
+
+    <section class="content-card asset-form-card">
+      <div class="asset-card-head">
+        <h2>Photos</h2>
+      </div>
+      <div class="stack-layout">
+        <label>
+          <span>Upload photos</span>
+          <input id="photo-upload" type="file" name="photos" accept="image/png,image/jpeg,image/webp,image/gif" multiple>
+        </label>
+        {% if asset %}
+          <div class="photo-search-row">
+            <button type="button" class="btn btn-secondary" id="open-image-search-btn">🔍 Search online for image</button>
+            <a href="https://images.google.co.uk/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">🌐 Google Image Search</a>
+          </div>
+        {% endif %}
+        <div id="selected-photo-preview" hidden>
+          <div class="selected-photo-preview-list" id="selected-photo-preview-list"></div>
+        </div>
+      </div>
+    </section>
+
+    {% if category_custom_groups %}
+      <section class="content-card asset-form-card asset-form-span-full">
+        <div class="asset-card-head">
+          <h2>Category Fields</h2>
+        </div>
+        <div class="asset-form-category-helper" data-role="category-helper-text">Only fields that match the selected category are shown below.</div>
+
+        <div class="category-form-groups category-form-groups-grid">
+          {% for group in category_custom_groups %}
+            {% set non_wide = group.fields|rejectattr('wide')|list|length %}
+            {% set can_three = non_wide in [3, 6] and (group.fields|selectattr('wide')|list|length == 0) %}
+            <section class="category-field-group" data-field-scope="{{ group.scope }}" {% if group.server_subcategory %}data-server-subcategory="{{ group.server_subcategory }}"{% endif %} {% if not group.visible %}hidden{% endif %}>
+              <div class="category-field-group-head">
+                <h3>{{ group.label }}</h3>
+                {% if asset %}
+                  {% set _composite = group.scope ~ '__' ~ group.key %}
+                  <label class="group-hide-toggle">
+                    <input type="checkbox" name="hide_group" value="{{ _composite }}" {% if _composite in hidden_group_keys %}checked{% endif %}>
+                    <span>Hide on detail page</span>
+                  </label>
+                {% endif %}
+              </div>
+              <div class="form-grid category-form-grid {{ 'compact-3' if can_three else '' }}">
+                {% for field in group.fields %}
+                  {{ custom_field_input(field) }}
+                {% endfor %}
+              </div>
+            </section>
+          {% endfor %}
+        </div>
+
+        <div id="category-field-empty" class="category-field-empty" hidden>No category-specific fields are available for the selected category.</div>
+      </section>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/server_subcategory_v2.js') }}"></script>
+  </form>
+
+  {% if asset and asset.photos %}
+    <section class="content-card asset-form-card asset-form-span-full">
+      <div class="asset-card-head">
+        <h2>Existing Photos</h2>
+      </div>
+      <div class="existing-photo-list">
+        {% for photo in asset.photos %}
+          <div class="existing-photo-card">
+            <img src="{{ url_for('uploaded_file', filename=photo.filename) }}" alt="{{ asset.name }} photo {{ loop.index }}">
+            <form method="post" action="{{ url_for('photo_delete', photo_id=photo.id) }}" onsubmit="return confirm('Remove this photo?');">
+              <button type="submit" class="btn btn-small btn-danger">Remove photo</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+
+<div id="image-crop-modal" class="crop-modal" hidden>
+  <div class="crop-modal-card">
+    <div class="crop-modal-header">
+      <div>
+        <h2>Crop image</h2>
+        <p>Adjust zoom and position, then apply the cropped image to the upload.</p>
+      </div>
+      <button type="button" id="crop-close-btn" class="btn btn-small btn-secondary crop-action-button">Close</button>
+    </div>
+
+    <div class="crop-modal-body">
+      <div class="crop-canvas-wrap">
+        <canvas id="crop-preview-canvas" width="400" height="400"></canvas>
+      </div>
+      <div class="crop-controls">
+        <label><span>Zoom</span><input id="crop-zoom" type="range" min="0.35" max="3" step="0.01" value="1"></label>
+        <label><span>Horizontal</span><input id="crop-offset-x" type="range" min="-100" max="100" step="1" value="0"></label>
+        <label><span>Vertical</span><input id="crop-offset-y" type="range" min="-100" max="100" step="1" value="0"></label>
+      </div>
+    </div>
+
+    <div class="crop-modal-footer">
+      <button type="button" id="crop-use-original-btn" class="btn btn-small btn-secondary crop-action-button">Use original</button>
+      <button type="button" id="crop-apply-btn" class="btn btn-small btn-primary crop-action-button">Apply crop</button>
+    </div>
+  </div>
+</div>
+
+{% if asset %}
+<div id="image-search-modal" class="crop-modal" hidden data-asset-id="{{ asset.id }}" data-asset-brand="{{ asset.brand or '' }}" data-asset-model="{{ asset.model or '' }}" data-asset-name="{{ asset.name or '' }}">
+  <div class="crop-modal-card image-search-modal-card">
+    <div class="crop-modal-header">
+      <div>
+        <h2>Search for an image</h2>
+        <p>Find transparent PNG product images. Click a result to attach it to this asset.</p>
+      </div>
+      <button type="button" id="image-search-close-btn" class="btn btn-small btn-secondary">Close</button>
+    </div>
+
+    <form id="image-search-form" class="image-search-form">
+      <input type="search" id="image-search-input" placeholder="e.g. Google Pixel 8 Pro" required>
+      <button type="submit" class="btn btn-primary btn-small" id="image-search-submit">Search</button>
+    </form>
+
+    <div id="image-search-status" class="image-search-status" hidden></div>
+    <div id="image-search-results" class="image-search-results"></div>
+  </div>
+</div>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/asset_form_category_visibility_v4.js') }}"></script>
+<script src="{{ url_for('static', filename='js/asset_form_cropper_v5.js') }}"></script>
+{% if asset %}
+<script src="{{ url_for('static', filename='js/asset_form_image_search_v2.js') }}"></script>
+{% endif %}
+{% endblock %}

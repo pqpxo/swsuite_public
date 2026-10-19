@@ -1,0 +1,53 @@
+<!-- version 6 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Portal for the SWAKES self-hosted application suite.">
+  <title>SWSuite</title>
+  <link rel="icon" href="assets/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="assets/logo-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css?v=7">
+  <script src="config.js" defer></script>
+  <script src="app.js?v=7" defer></script>
+  <script src="assets/particles.min.js" defer></script>
+  <script src="particles.js" defer></script>
+</head>
+<body>
+  <div id="particles-js" aria-hidden="true"></div>
+  <button class="edit-toggle" id="edit-order" type="button" aria-pressed="false" aria-label="Rearrange applications" title="Rearrange applications"><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg></button>
+  <header class="header">
+    <div class="brand"><img class="brand-mark" src="assets/logo-192.png" width="60" height="60" alt="">SWSuite</div>
+  </header>
+  <main class="main">
+    <div class="hero">
+      <p class="eyebrow">The SWAKES application suite</p>
+      <h1>Everything in its place.</h1>
+      <p class="subtitle">Your infrastructure. Your tools. Your workspace.</p>
+    </div>
+    <div class="apps" id="apps" role="group" aria-label="Select an application"></div>
+    <p class="visually-hidden" id="order-hint">Drag to move, or use the arrow keys. Press Escape when done.</p>
+    <p class="visually-hidden" id="order-status" role="status" aria-live="polite"></p>
+    <section class="feature" id="feature" aria-labelledby="app-name" hidden>
+      <div class="feature-info">
+        <div id="app-details" aria-live="polite" aria-atomic="true">
+          <p class="eyebrow" id="app-category"></p>
+          <h2 id="app-name"></h2>
+          <p class="description" id="app-description"></p>
+        </div>
+        <div class="feature-bottom">
+          <a class="launch" id="launch"><span id="launch-label">Open application</span><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#arrow-up-right"></use></svg></a>
+          <a class="repo" id="repo" target="_blank" rel="noopener" hidden><svg class="icon" aria-hidden="true"><use href="assets/icons.svg#github"></use></svg></a>
+        </div>
+      </div>
+      <div class="feature-art" aria-hidden="true"><span class="app-icon" id="feature-art"><svg class="icon"><use href="assets/icons.svg#layout-grid"></use></svg></span></div>
+    </section>
+    <p class="note" id="note" role="status" hidden></p>
+    <noscript><p class="note">Enable JavaScript to display your applications and check their status.</p></noscript>
+  </main>
+  <footer class="footer"><span>Built by <a href="https://www.swakes.co.uk">SWAKES</a></span></footer>
+</body>
+</html>

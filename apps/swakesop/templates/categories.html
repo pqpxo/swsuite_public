@@ -1,0 +1,100 @@
+<!-- version 5 -->
+{% extends "base.html" %}
+{% block title %}Categories · SWOps{% endblock %}
+{% block content %}
+<section class="page-header-row">
+    <div>
+        <h1>Categories</h1>
+        <p class="section-copy">Manage category names, colours, emoji fallback icons, and SVG icons.</p>
+    </div>
+</section>
+
+<section class="stack-layout">
+    <article class="content-card">
+        <div class="section-header compact-header">
+            <div>
+ <!--               <h2>Existing Categories</h2>  -->
+ <!--               <p class="section-copy">SVG icons will be shown anywhere the category icon is rendered.</p> -->
+            </div>
+        </div>
+
+        <div class="category-stack">
+            {% if categories %}
+                {% for row in categories %}
+                    {% set category = row.category %}
+                    <article class="category-row">
+                        <div class="category-row-main">
+                            <span class="category-icon large" style="--accent: {{ category.color or '#4f8cff' }}">{{ category_icon_inner(category)|safe }}</span>
+                            <div>
+                                <h2>{{ category.name }}</h2>
+                                <p>{{ category.description or 'No description saved.' }}</p>
+                            </div>
+                        </div>
+                        <div class="category-row-actions">
+                            <span class="category-count big" style="--accent: {{ category.color or '#4f8cff' }}">{{ row.asset_count }}</span>
+                            <a class="btn btn-secondary btn-small" href="{{ url_for('category_edit', category_id=category.id) }}">Edit</a>
+                            <form method="post" action="{{ url_for('category_delete', category_id=category.id) }}" onsubmit="return confirm('Delete this category?');">
+                                <button class="btn btn-danger btn-small" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state-card">
+                    <strong>No categories created yet.</strong>
+                    <p>Add your first category below.</p>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <article class="content-card">
+        <div class="section-header compact-header">
+            <div>
+                <h2>Add Category</h2>
+                <p class="section-copy">Use an emoji fallback, upload an SVG, or paste SVG code.</p>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="stack-layout">
+            {{ form.hidden_tag() }}
+
+            <div class="form-grid">
+                <label>
+                    <span>Name</span>
+                    {{ form.name(placeholder='Cameras') }}
+                </label>
+
+                <label>
+                    <span>Color</span>
+                    {{ form.color(placeholder='#4f8cff') }}
+                </label>
+
+                <label class="full-width">
+                    <span>Description</span>
+                    {{ form.description(rows=3, placeholder='Monitors, printers and accessories.') }}
+                </label>
+
+                <label>
+                    <span>Emoji / text fallback</span>
+                    {{ form.icon(placeholder='📦') }}
+                </label>
+
+                <label>
+                    <span>Upload SVG icon</span>
+                    <input type="file" name="icon_upload" accept=".svg,image/svg+xml">
+                </label>
+
+                <label class="full-width">
+                    <span>Or paste SVG code</span>
+                    {{ form.icon_svg(rows=8, placeholder='<svg viewBox="0 0 24 24">...</svg>') }}
+                </label>
+            </div>
+
+            <div class="card-actions end-actions">
+                <button type="submit" class="btn btn-primary">Add category</button>
+            </div>
+        </form>
+    </article>
+</section>
+{% endblock %}

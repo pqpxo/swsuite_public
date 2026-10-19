@@ -1,0 +1,26 @@
+{# version 4 #}
+{% extends "base.html" %}
+{% block title %}Settings — SWKick{% endblock %}
+{% block body %}
+
+<main class="content"><div class="page-heading"><div><h1>Settings</h1><p>Manage your SWKick configuration and activity.</p></div></div>
+  <form class="card" method="post" action="{{ base }}/settings/admin">
+    <h3>Admin login</h3>
+    <label>Username<input name="username" value="{{ s['admin_username'] or '' }}" required></label>
+    <label>New password<input name="password" type="password" required></label>
+    <button class="btn-primary">Update admin</button>
+  </form>
+  <form class="card" method="post" action="{{ base }}/settings/poll">
+    <h3>Update checks</h3>
+    <label>Poll interval (hours)<input name="poll_interval_hours" type="number"
+      value="{{ s['poll_interval_hours'] }}"></label>
+    <button class="btn-primary">Save</button>
+  </form>
+  <form class="card" method="post" action="{{ base }}/settings/pushover">
+    <h3>Pushover notifications</h3>
+    <label>API token<input name="token" placeholder="leave blank to keep"></label>
+    <label>User key<input name="user" placeholder="leave blank to keep"></label>
+    <button class="btn-primary">Save</button>
+  </form>
+</main>
+{% endblock %}

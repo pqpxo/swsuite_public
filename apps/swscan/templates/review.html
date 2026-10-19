@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Review · SWScan{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Review detections</h1>
+  <div class="row-actions">
+    <a class="btn {{ 'primary' if scope == 'unverified' }}" href="{{ url_for('review', scope='unverified') }}">Unverified ({{ total_unverified }})</a>
+    <a class="btn {{ 'primary' if scope == 'all' }}" href="{{ url_for('review', scope='all') }}">All detected</a>
+  </div>
+</header>
+
+{% if items %}
+<section class="review" id="review"
+         data-items='{{ items|map(attribute="id")|list|tojson }}'>
+  <div class="review-stage">
+    <div class="review-image" id="rv-image"><div class="spinner">loading…</div></div>
+    <div class="review-info">
+      <div class="rv-counter"><span id="rv-pos">1</span> / {{ items|length }}</div>
+      <h2 id="rv-name">—</h2>
+      <div class="rv-meta">
+        <span class="chip" id="rv-cat">—</span>
+        <span>amount <b id="rv-qty">—</b></span>
+        <span id="rv-cond">—</span>
+        <span id="rv-zone"></span>
+      </div>
+      <div class="rv-status" id="rv-status"></div>
+
+      <label class="rv-rename">Correct the name if wrong, then confirm
+        <input type="text" id="rv-name-input" placeholder="item name">
+      </label>
+
+      <div class="rv-actions">
+        <button class="btn danger lg" id="rv-reject">✗ Wrong (R)</button>
+        <button class="btn ok lg" id="rv-confirm">✓ Correct (C)</button>
+      </div>
+      <div class="rv-nav">
+        <button class="btn" id="rv-prev">‹ Prev</button>
+        <button class="btn" id="rv-skip">Skip ›</button>
+        <a class="btn" href="{{ url_for('catalog') }}">Done</a>
+      </div>
+      <p class="hint">Keys: <b>C</b> confirm · <b>R</b> reject · <b>←/→</b> navigate.
+      Verdicts feed future scan prompts.</p>
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="panel">
+  <p class="empty">{{ 'Nothing left to review — all detections verified.' if scope == 'unverified' else 'No detected items yet. Run a scan first.' }}</p>
+</section>
+{% endif %}
+{% endblock %}

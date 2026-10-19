@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# App data / secrets — never commit
+/data/
+*.sqlite
+*.sqlite3
+*.db
+master.key
+*.key
+.env
+
+# Brainstorm/visual companion scratch
+.superpowers/
+
+# OS
+.DS_Store
+Thumbs.db

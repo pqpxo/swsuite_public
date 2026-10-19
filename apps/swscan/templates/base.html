@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}SWScan{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SWScan">
+  </div>
+  <nav>
+    <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Home</a>
+    <a href="{{ url_for('scan') }}" class="{{ 'active' if request.endpoint == 'scan' }}">New scan</a>
+    <a href="{{ url_for('catalog') }}" class="{{ 'active' if request.endpoint in ('catalog','item_detail') }}">Catalog</a>
+    <a href="{{ url_for('review') }}" class="{{ 'active' if request.endpoint == 'review' }}">Review</a>
+    <a href="{{ url_for('gallery') }}" class="{{ 'active' if request.endpoint == 'gallery' }}">Gallery</a>
+    <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">Settings</a>
+  </nav>
+  <div class="sidebar-foot">self-hosted · swakes</div>
+</aside>
+<main>
+{% block content %}{% endblock %}
+</main>
+<script>window.BASE_PATH = "{{ request.script_root }}";</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

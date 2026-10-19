@@ -1,0 +1,83 @@
+<!-- version 3 -->
+{% extends "base.html" %}
+{% block title %}{{ title }} · SWOps{% endblock %}
+{% block content %}
+<section class="page-header-row">
+    <div>
+        <h1>{{ title }}</h1>
+        <p class="section-copy">Edit the category name, description, colour, and icon source.</p>
+    </div>
+    <a href="{{ url_for('category_list') }}" class="btn btn-secondary">Back to categories</a>
+</section>
+
+<section class="stack-layout">
+    <article class="content-card">
+        <div class="section-header compact-header">
+            <div>
+                <h2>Preview</h2>
+                <p class="section-copy">This is how the category icon will appear in the interface.</p>
+            </div>
+        </div>
+
+        <div class="category-row">
+            <div class="category-row-main">
+                <span class="category-icon large" style="--accent: {{ category.color or '#4f8cff' }}">{{ category_icon_inner(category)|safe }}</span>
+                <div>
+                    <h2>{{ category.name }}</h2>
+                    <p>{{ category.description or 'No description saved.' }}</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article class="content-card">
+        <div class="section-header compact-header">
+            <div>
+                <h2>Category Details</h2>
+                <p class="section-copy">Uploaded SVG takes priority over pasted SVG, and SVG takes priority over the emoji fallback.</p>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="stack-layout">
+            {{ form.hidden_tag() }}
+
+            <div class="form-grid">
+                <label>
+                    <span>Name</span>
+                    {{ form.name(placeholder='Cameras') }}
+                </label>
+
+                <label>
+                    <span>Color</span>
+                    {{ form.color(placeholder='#4f8cff') }}
+                </label>
+
+                <label class="full-width">
+                    <span>Description</span>
+                    {{ form.description(rows=3, placeholder='Monitors, printers and accessories.') }}
+                </label>
+
+                <label>
+                    <span>Emoji / text fallback</span>
+                    {{ form.icon(placeholder='📦') }}
+                </label>
+
+                <label>
+                    <span>Upload SVG icon</span>
+                    <input type="file" name="icon_upload" accept=".svg,image/svg+xml">
+                </label>
+
+                <label class="full-width">
+                    <span>Or paste SVG code</span>
+                    {{ form.icon_svg(rows=10, placeholder='<svg viewBox="0 0 24 24">...</svg>') }}
+                </label>
+            </div>
+
+            <div class="card-actions end-actions">
+                <button type="submit" class="btn btn-primary">Save category</button>
+                <a href="{{ url_for('category_list') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </article>
+</section>
+{% endblock %}

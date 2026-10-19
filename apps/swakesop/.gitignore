@@ -1,0 +1,23 @@
+# Don't commit environment secrets
+.env
+*.env
+
+# Docker volumes / local data
+data/
+volumes/
+
+# OS files
+.DS_Store
+docker-backups/
+__pycache__/
+backups/
+*.bak
+test.txt
+old/
+.pre_live_sync_backup/
+.pre_live_sync_backup/
+static/generated/
+
+# Generated exports
+*.xlsx
+

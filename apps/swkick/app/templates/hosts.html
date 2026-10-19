@@ -1,0 +1,19 @@
+{# version 5 #}
+{% extends "base.html" %}
+{% block title %}Hosts — SWKick{% endblock %}
+{% block body %}
+<main class="content">
+  <div class="page-heading"><div><h1>Managed Hosts</h1><p>Add, inspect and manage your connected Linux systems.</p></div><a class="btn-primary chip" href="{{ base }}/hosts/new/form">+ Add host</a></div>
+  <div class="card section-card">
+    <div class="search-field"><input class="filter" type="search" placeholder="Filter hosts…" aria-label="Filter hosts" oninput="filterRows(this, 'hosts-table')"></div>
+    <div class="table-scroll"><table class="log-table" id="hosts-table">
+      <thead><tr><th>Name</th><th>Address</th><th>Username</th><th>OS</th><th>Actions</th></tr></thead>
+      <tbody>{% for h in hosts %}
+      <tr><td><a class="host-name" href="{{ base }}/hosts/{{ h['id'] }}">{{ h['name'] }}</a></td><td class="mono">{{ h['hostname'] }}:{{ h['ssh_port'] }}</td><td>{{ h['ssh_username'] }}</td><td>{{ h['os_label'] or '—' }}</td>
+      <td><div class="row-actions"><a class="chip" href="{{ base }}/hosts/{{ h['id'] }}/edit">Edit</a><form method="post" action="{{ base }}/hosts/{{ h['id'] }}/delete" onsubmit="return confirm('Delete this host?')"><button class="btn-muted" type="submit">Delete</button></form></div></td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% if not hosts %}<div class="empty-state"><strong>No hosts added</strong><a href="{{ base }}/hosts/new/form">Add your first host</a></div>{% endif %}
+  </div>
+</main>
+{% endblock %}

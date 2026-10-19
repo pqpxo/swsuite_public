@@ -1,0 +1,27 @@
+{# version 5 #}
+{% extends "base.html" %}
+{% block title %}{{ host['name'] }} — SWKick{% endblock %}
+{% block body %}
+<main class="content">
+  <div class="page-heading"><div><h1>{{ host['name'] }}</h1><p>Host details and update activity.</p></div>
+    <div class="page-actions"><a class="chip" href="{{ base }}/hosts/{{ host['id'] }}/edit">Edit host</a><button class="chip check-host-button" type="button" aria-busy="false" onclick='checkHost({{ host["id"] }}, {{ host["name"] | tojson }}, this)'>
+      <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 11a8 8 0 0 0-14.3-4.9L3 9"></path>
+        <path d="M3 4v5h5"></path>
+        <path d="M4 13a8 8 0 0 0 14.3 4.9L21 15"></path>
+        <path d="M16 15h5v5"></path>
+      </svg>
+      <span>Check Updates</span>
+    </button>{% if host['update_count'] > 0 and host['reachable'] %}<button class="btn-primary" type="button" onclick='runUpgrade({{ host["id"] }}, {{ host["name"] | tojson }})'>Update &amp; Upgrade</button>{% endif %}</div>
+  </div>
+  <section class="card section-card"><h3>Connection Details</h3><div class="detail-meta">
+    <span>System: {{ host['os_label'] or 'Unknown' }}</span><span class="mono">SSH: {{ host['hostname'] }}:{{ host['ssh_port'] }}</span><span>Pending: {{ host['update_count'] }} updates</span><span>Last checked: {{ host['last_checked_at'] or 'Never' }}</span>
+  </div></section>
+  <h2 class="section-title">Job History</h2>
+  <div class="card section-card"><div class="table-scroll"><table class="log-table"><thead><tr><th>#</th><th>Kind</th><th>Trigger</th><th>Status</th><th>Started</th></tr></thead><tbody>
+  {% for j in history %}<tr><td>{{ j['id'] }}</td><td>{{ j['kind'] }}</td><td>{{ j['trigger'] }}</td><td class="st-{{ j['status'] }}">{{ j['status'] }}</td><td class="mono">{{ j['started_at'] }}</td></tr>{% endfor %}
+  </tbody></table></div>{% if not history %}<div class="empty-state">No job history yet.</div>{% endif %}</div>
+</main>
+<div id="console-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="console-title"><div class="card console-card"><div class="console-head"><span id="console-title"></span><button class="chip" type="button" onclick="closeConsole()">Close</button></div><pre id="console-out" class="console" aria-live="polite"></pre></div></div>
+{% endblock %}

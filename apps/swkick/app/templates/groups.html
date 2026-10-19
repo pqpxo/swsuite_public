@@ -1,0 +1,43 @@
+{# version 6 #}
+{% extends "base.html" %}
+{% block title %}Groups — SWKick{% endblock %}
+{% block body %}
+<main class="content">
+  <div class="page-heading">
+    <div><h1>Groups</h1><p>Create and manage labels for sorting Linux hosts on the dashboard.</p></div>
+    <a class="chip" href="{{ base }}/hosts/new/form">+ Add host</a>
+  </div>
+  <section class="card section-card">
+    <h3>Create Group</h3>
+    <form class="group-create-form" method="post" action="{{ base }}/groups/new">
+      <label for="group-dimension">Group type
+        <select id="group-dimension" name="dimension">
+          {% for dim, label in dimensions %}<option value="{{ dim }}">{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <label for="group-name">Group name
+        <input id="group-name" name="name" maxlength="80" placeholder="e.g. Production" required>
+      </label>
+      <button class="btn-primary" type="submit">+ Create group</button>
+    </form>
+  </section>
+  <div class="group-manager-grid">
+    {% for label, items in by_dim.items() %}
+    <section class="card section-card group-manager-card">
+      <h3>{{ label }} <span class="muted small">({{ items | length }})</span></h3>
+      {% for g in items %}
+      <div class="group-managed-row">
+        <div><strong>{{ g['name'] }}</strong><span class="muted small">{{ host_counts[g['id']] }} host{{ '' if host_counts[g['id']] == 1 else 's' }}</span></div>
+        <form method="post" action="{{ base }}/groups/{{ g['id'] }}/delete"
+              onsubmit='return confirm({{ ("Delete " ~ label ~ ": " ~ g["name"] ~ "? This will unassign the group from all hosts.") | tojson }})'>
+          <button class="btn-muted" type="submit" aria-label="Delete {{ g['name'] }}">Delete</button>
+        </form>
+      </div>
+      {% else %}
+      <p class="muted small">No groups in this category.</p>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+</main>
+{% endblock %}

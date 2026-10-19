@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }} · SWScan{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>{{ item.name }}</h1>
+  <div class="row-actions">
+    {% if item.verified == 'confirmed' %}<span class="badge complete">✓ confirmed</span>
+    {% elif item.verified == 'rejected' %}<span class="badge failed">✗ rejected</span>{% endif %}
+    {% if item.job_id and item.verified == 'unverified' %}
+    <form method="post" action="{{ url_for('item_verify', item_id=item.id) }}">
+      <input type="hidden" name="action" value="confirm"><button class="btn ok">✓ Correct</button>
+    </form>
+    <form method="post" action="{{ url_for('item_verify', item_id=item.id) }}">
+      <input type="hidden" name="action" value="reject"><button class="btn danger">✗ Wrong</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('item_delete', item_id=item.id) }}"
+          onsubmit="return confirm('Delete item?')"><button class="btn danger">Delete</button></form>
+  </div>
+</header>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Details</h2>
+    <form method="post">
+      <label>Name<input name="name" value="{{ item.name }}"></label>
+      <div class="field-row">
+        <label>Type<input name="category" value="{{ item.category }}"></label>
+        <label>Amount<input name="quantity" value="{{ item.quantity }}"></label>
+      </div>
+      <div class="field-row">
+        <label>Condition<input name="condition" value="{{ item.condition }}"></label>
+        <label>Zone<input name="zone" value="{{ item.zone }}"></label>
+      </div>
+      <label>Notes<textarea name="notes" rows="3">{{ item.notes }}</textarea></label>
+      <label>Image URL <small>(set automatically by Find images)</small>
+        <input name="image_url" id="image-url" value="{{ item.image_url }}"></label>
+      <button class="btn primary">Save</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Image</h2>
+    <div class="item-image">
+      {% if item.image_path and item.box %}<img src="{{ url_for('item_boxed', item_id=item.id) }}" alt="detected item with bounding box">
+      {% elif item.image_path %}<img src="{{ url_for('media', relpath=item.image_path) }}" alt="">
+      {% elif item.image_url %}<img src="{{ item.image_url }}" alt="">
+      {% else %}<p class="empty">No image set.</p>{% endif %}
+    </div>
+    {% if item.box %}<p class="hint">Blue box marks where the model identified this item.</p>{% endif %}
+
+    <h3>Find images <small>(via SearXNG)</small></h3>
+    <button class="btn" id="find-images" data-item="{{ item.id }}">Search web images</button>
+    <div class="grid" id="image-results"></div>
+  </section>
+</div>
+
+{% if frames %}
+<section class="panel">
+  <h2>Set image from scan frames</h2>
+  <div class="grid">
+    {% for f in frames %}
+    <form method="post" action="{{ url_for('item_set_image', item_id=item.id) }}" class="thumb">
+      <input type="hidden" name="frame_id" value="{{ f.id }}">
+      <button class="thumb-btn"><img src="{{ url_for('media', relpath=f.path) }}" loading="lazy" alt=""></button>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{
+  "name": "SWRack",
+  "short_name": "SWRack",
+  "description": "Visual rack and data cabinet documentation.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#121827",
+  "background_color": "#121827",
+  "display": "standalone"
+}

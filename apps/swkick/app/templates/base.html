@@ -1,0 +1,23 @@
+{# version 7 #}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-base="{{ base }}">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#242e42"/>
+  <title>{% block title %}SWKick{% endblock %}</title>
+  <meta name="description" content="SWKick — Linux host update monitoring dashboard"/>
+  <link rel="icon" type="image/png" href="{{ base }}/static/swkick-logo.png?v=1"/>
+  <link rel="apple-touch-icon" href="{{ base }}/static/swkick-logo.png?v=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('kicker_theme')==='light'?'light':'dark'}catch(e){}</script>
+  <link rel="stylesheet" href="{{ base }}/static/style.css?v=5"/>
+</head>
+<body>
+  {% if request.url.path != '/login' %}{% include '_nav.html' %}{% endif %}
+  {% block body %}{% endblock %}
+  <script src="{{ base }}/static/app.js?v=5"></script>
+</body>
+</html>

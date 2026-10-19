@@ -1,0 +1,274 @@
+<div align="center">
+  <img src="src/logo.png" alt="SWAps Logo" width="100" height="100" style="border-radius: 20px"/>
+
+  # **SWAps**
+  ### SWAKES Automated Provisioning System
+
+  *Generate, configure and deploy Linux provisioning scripts to remote hosts all from your browser.*
+
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+  ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
+  ![Node](https://img.shields.io/badge/node-20--alpine-339933?logo=node.js&logoColor=white)
+  ![React](https://img.shields.io/badge/react-18-61DAFB?logo=react&logoColor=black)
+
+  [SWAKES.co.uk](http://SWAKES.co.uk) ‎&nbsp;  |‎ &nbsp;  [Blog Post](https://makes.swakes.co.uk/code-with-claude-point-click-provisioned-with-swaps/)
+  
+</div>
+
+
+
+---
+
+## What is SWAps?
+
+**SWAps** is a self-hosted web application that takes the pain out of setting up new Linux servers. Pick the software and configuration you want, fill in your host details, and SWAps generates a ready-to-run bash script — then deploys it over SSH directly from the browser.
+
+No Ansible control node. No manual scripting. Just point, click, deploy.
+
+![Screenshot](screenshot.png)
+
+---
+
+<!-- version 1 -->
+### Menu
+
+- [Features](#features)
+  - [Script Generation](#script-generation)
+  - [Software Provisioning](#software-provisioning)
+  - [Configuration](#configuration)
+  - [Deployment](#deployment)
+  - [Credential Vault](#credential-vault)
+  - [Profiles & Sharing](#profiles--sharing)
+- [Available Software](#available-software)
+  - [Software Packages](#software-packages)
+  - [Media Server Stack](#media-server-stack)
+  - [Security](#available-software-security)
+  - [Infrastructure](#infrastructure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Project Structure](#project-structure)
+  - [Hot Reload \(Development\)](#hot-reload-development)
+- [Architecture](#architecture)
+- [docker-compose.yml](#docker-compose-yml)
+- [Security Notes](#security-notes)
+- [Contributing](#contributing)
+
+---
+
+## Features
+
+### 🖥️ Script Generation
+- Generates clean, idempotent bash scripts for Ubuntu (amd64) and Raspberry Pi OS
+- Live syntax-highlighted script preview
+- Diff view to compare changes between generations
+- Ansible playbook export
+- One-liner cURL export
+- Rollback script generation
+
+### 📦 Software Provisioning
+| Category | Packages |
+|----------|----------|
+| Containers | Docker + Docker Compose, Portainer CE |
+| Version Control | Git |
+| Monitoring | Netdata, Prometheus Node Exporter, htop, duf, ncdu |
+| Networking | curl, nmap, rsync |
+| Terminal | tmux, vim, unzip |
+| Security | Wazuh Agent |
+| System Info | Neofetch (custom config + image) |
+
+### ⚙️ Configuration
+- **`.bashrc` builder** — aliases, PS1 colour picker, SSH login menu, environment variables
+- **SSH hardening** — disable password auth, change port, restrict root login
+- **UFW firewall** presets (Web Server, Docker Host, Minimal, Custom)
+- **fail2ban** setup
+- **Custom APT repositories**
+- **Cron jobs**
+- **DNS / hosts entries**
+- **Environment variables**
+- **Portainer stack deploy**
+- **SSH authorised keys**
+- **Custom scripts**
+
+### 🚀 Deployment
+- Deploy over SSH directly from the browser (password or private key auth)
+- Multi-host deploy tabs — manage several servers simultaneously
+- Dry Run mode — echo commands without executing
+- Live terminal output with progress tracking
+- Post-deploy verification checks
+- Deploy history log
+
+### 🔐 Credential Vault
+- AES-GCM encrypted credential storage in the browser (Web Crypto API)
+- Master password protected — credentials never leave the browser unencrypted
+- Per-host save/load from vault
+
+### 💾 Profiles & Sharing
+- Save and load named host profiles
+- Shareable config URLs (encodes settings, never passwords)
+- Import settings from a live host via SSH scan
+- Ansible export for CI/CD integration
+
+Let me pull the full list from the source — software tab plus security and infrastructure:
+
+I have everything I need. Here's the README-ready markdown:
+
+---
+
+## Available Software
+
+### 🖥️ Software Packages
+
+| Package | Description |
+|---|---|
+| curl | HTTP client |
+| Docker & Docker Compose | Container runtime + Compose |
+| duf | Pretty disk usage (df replacement) |
+| Git | Distributed version control |
+| Glances | System resource monitor |
+| htop | Interactive process viewer |
+| ncdu | NCurses disk usage analyser |
+| Neofetch | System info with custom config + image |
+| Netdata | Real-time performance monitoring |
+| NGINX | High-performance web server |
+| NGINX Proxy Manager | Reverse proxy with SSL UI *(requires Docker)* |
+| nmap | Network scanner |
+| Node.js | JavaScript runtime (LTS) |
+| Portainer CE | Docker web management UI *(requires Docker)* |
+| Prometheus Node Exporter | Metrics exporter for Prometheus/Grafana |
+| Python 3 | Python 3 runtime |
+| rsync | Fast file sync/transfer |
+| tmux | Terminal multiplexer |
+| unzip | Archive extractor |
+| vim | Vi IMproved text editor |
+| Wazuh Agent | Security monitoring + SIEM |
+
+### 🎬 Media Server Stack *(requires Docker)*
+
+Includes a choice of **Plex** or **Jellyfin**, plus any combination of:
+
+| Container | Description |
+|---|---|
+| Bazarr | Subtitle management |
+| Cleanuparr | Media library cleanup |
+| FlareSolverr | Cloudflare bypass proxy |
+| Kapowarr | Comics management |
+| Lidarr | Music management |
+| Overseerr | Media request management |
+| Prowlarr | Indexer manager |
+| qBittorrent | BitTorrent client |
+| Radarr | Movie management |
+| SABnzbd | Usenet downloader |
+| Sonarr | TV show management |
+| Tautulli | Plex statistics |
+| Tdarr | Media transcoding |
+| Tracearr | *arr stack config sync |
+| Transmission | BitTorrent client |
+| Whisparr | Adult content manager |
+
+### 🔒 Security
+
+| Feature | Description |
+|---|---|
+| UFW Firewall | Uncomplicated Firewall with presets |
+| fail2ban | Block brute-force attacks |
+
+### ⚙️ Infrastructure
+
+| Feature | Description |
+|---|---|
+| Cron Jobs | Schedule recurring tasks |
+| Custom APT Repositories | Add PPAs or third-party repos |
+| Portainer Stack Deploy | Deploy a docker-compose stack |
+
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Docker + Docker Compose
+
+### Installation
+
+```bash
+git clone https://github.com/pqpxo/swaps.git
+cd swaps
+docker compose up -d --build
+```
+
+Then open **http://your-server-ip:8080** in your browser.
+
+### Project Structure
+
+```
+swaps/
+├── src/
+│   ├── index.html      # Source (JSX) — edit this
+│   └── logo.png
+├── public/             # Compiled output — generated by build
+├── build.js            # JSX pre-compiler (runs at Docker build time)
+├── server.js           # Express + SSH + WebSocket backend
+├── Dockerfile          # Multi-stage build
+└── docker-compose.yml
+```
+
+> **Note:** Always edit `src/index.html`. The Docker build compiles it to `public/index.html` automatically via Babel. Never edit `public/` directly.
+
+### Hot Reload (Development)
+
+To update the running container without a full rebuild:
+
+```bash
+node build.js
+docker cp public/index.html swaps:/app/public/index.html && docker restart swaps
+```
+
+---
+
+## Architecture
+
+```
+Browser  ──HTTP──▶  Express (server.js)  ──SSH──▶  Remote Linux Host
+         ◀──WS───  WebSocket              ◀──────   (stdout stream)
+```
+
+- **Frontend:** React 18 (pre-compiled, no runtime Babel)
+- **Backend:** Node.js + Express, ssh2, ws
+- **Auth:** SSH password or private key, passed at deploy time
+- **Credential storage:** Browser-side AES-GCM (Web Crypto API)
+
+---
+
+## docker-compose.yml
+
+```yaml
+services:
+  swaps:
+    image: swaps:2.0.0
+    build: .
+    container_name: swaps
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+```
+
+---
+
+## Security Notes
+
+- SSH credentials are **never stored server-side**. They live only in the browser's encrypted vault or in memory during a session.
+- The app has no authentication layer of its own — **run it on a private network or behind a reverse proxy with auth** (e.g. Nginx + Basic Auth, Authelia, Authentik).
+- Dry Run mode is recommended for first-time deploys on production systems.
+
+---
+
+## Contributing
+
+Pull requests welcome. For major changes please open an issue first.
+
+---
+
+## License
+
+MIT

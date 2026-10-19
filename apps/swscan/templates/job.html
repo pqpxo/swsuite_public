@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Scan #{{ job.id }} · SWScan{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Scan <span class="mono">#{{ job.id }}</span></h1>
+  <span class="badge {{ job.status }}" id="job-badge">{{ job.status }}</span>
+</header>
+
+<section class="panel" id="progress-panel" data-job="{{ job.id }}" data-status="{{ job.status }}">
+  <div class="meta-row">
+    <span class="mono">{{ job.filename }}</span>
+    <span>zone: <b>{{ job.zone or 'none' }}</b></span>
+    <span>provider: <b class="mono">{{ job.provider }} / {{ job.model }}</b></span>
+  </div>
+  <div class="progress"><div class="progress-fill" id="progress-fill" style="width: {{ job.progress }}%"></div></div>
+  <p class="hint" id="job-message">{{ job.message or 'Frames analyzed: ' ~ job.frames_analyzed ~ ' / ' ~ job.frames_total }}</p>
+</section>
+
+<section class="panel">
+  <h2>Detected items <small>({{ items|length }})</small></h2>
+  {% if items %}<p class="hint">Confirm ✓ or reject ✗ each detection, and rename wrong ones on the item page.
+  Your verdicts are fed into future scan prompts to improve recognition.</p>{% endif %}
+  {% if items %}
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Amount</th><th>Condition</th><th>Verdict</th><th></th></tr></thead>
+    <tbody>
+    {% for it in items %}
+      <tr class="{{ 'rejected-row' if it.verified == 'rejected' }}">
+        <td><a href="{{ url_for('item_detail', item_id=it.id) }}">{{ it.name }}</a></td>
+        <td><span class="chip">{{ it.category }}</span></td>
+        <td class="mono">{{ it.quantity }}</td>
+        <td>{{ it.condition }}</td>
+        <td class="row-actions">
+          {% if it.verified == 'confirmed' %}<span class="badge complete">✓ confirmed</span>
+          {% elif it.verified == 'rejected' %}<span class="badge failed">✗ rejected</span>
+          {% else %}
+          <form method="post" action="{{ url_for('item_verify', item_id=it.id) }}">
+            <input type="hidden" name="action" value="confirm"><button class="btn sm ok" title="Correct">✓</button>
+          </form>
+          <form method="post" action="{{ url_for('item_verify', item_id=it.id) }}">
+            <input type="hidden" name="action" value="reject"><button class="btn sm danger" title="Wrong">✗</button>
+          </form>
+          {% endif %}
+        </td>
+        <td><a class="btn sm" href="{{ url_for('item_detail', item_id=it.id) }}">view</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="empty">Nothing yet{{ '.' if job.status in ('complete','failed') else ' — analysis in progress.' }}</p>{% endif %}
+</section>
+
+<section class="panel">
+  <h2>Frames sent for analysis <small>(boxes mark identified items)</small> <small>({{ frames|length }})</small></h2>
+  <div class="grid">
+    {% for f in frames %}
+      <a class="thumb {{ 'has-boxes' if boxes.get(f.id) }}" href="{{ url_for('media', relpath=f.path) }}" target="_blank">
+        <img src="{{ url_for('media', relpath=f.path) }}" loading="lazy" alt="frame {{ f.idx }}">
+        {% for b in boxes.get(f.id, []) %}
+        <span class="bbox" style="left:{{ b.l }}%;top:{{ b.t }}%;width:{{ b.w }}%;height:{{ b.h }}%">
+          <em>{{ b.name }}</em></span>
+        {% endfor %}
+        <span>#{{ f.idx }}{{ ' ✓' if f.analyzed }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

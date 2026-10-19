@@ -1,0 +1,223 @@
+<!-- version 17 -->
+{% extends "base.html" %}
+{% block title %}Assets · SWOps{% endblock %}
+{% block content %}
+<section class="toolbar-panel mobile-toolbar-panel">
+    <form class="toolbar-form toolbar-form-assets toolbar-form-grouping" method="get" id="filter-form">
+        {% if selected_category_id %}
+            <input type="hidden" name="category_id" value="{{ selected_category_id }}">
+        {% endif %}
+        <div class="search-input-wrap compact-search-wrap">
+            <span>🔎</span>
+            <input type="search" name="q" value="{{ query }}" placeholder="Search devices...">
+        </div>
+        <select class="status-filter" name="status">
+            <option value="all" {% if status == 'all' %}selected{% endif %}>All Status</option>
+            <option value="active" {% if status == 'active' %}selected{% endif %}>Online</option>
+            <option value="attention" {% if status == 'attention' %}selected{% endif %}>Requires Attention</option>
+            <option value="update" {% if status == 'update' %}selected{% endif %}>Requires Update</option>
+            <option value="retired" {% if status == 'retired' %}selected{% endif %}>Retired</option>
+        </select>
+        <select class="group-by-filter" name="group_by">
+            <option value="none" {% if group_by == 'none' %}selected{% endif %}>No Grouping</option>
+            <option value="category" {% if group_by == 'category' %}selected{% endif %}>Group by Category</option>
+            <option value="location" {% if group_by == 'location' %}selected{% endif %}>Group by Location</option>
+            <option value="brand" {% if group_by == 'brand' %}selected{% endif %}>Group by Brand</option>
+            <option value="status" {% if group_by == 'status' %}selected{% endif %}>Group by Status</option>
+        </select>
+        <select class="sort-by-filter" name="sort_by">
+            <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>A → Z</option>
+            <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Z → A</option>
+            <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Sort by Status</option>
+        </select>
+    </form>
+</section>
+<script>
+(function () {
+    var form = document.getElementById('filter-form');
+    if (!form) return;
+    form.querySelectorAll('select').forEach(function (sel) {
+        sel.addEventListener('change', function () { form.submit(); });
+    });
+})();
+</script>
+
+<div class="dash-widgets">
+    <div class="dash-widgets-left">
+        <a class="dash-widget" href="{{ url_for('index', status='all') }}">
+            <span class="dash-widget-num">{{ dash.total }}</span>
+            <span class="dash-widget-lbl">Total</span>
+        </a>
+        <a class="dash-widget dash-widget-online" href="{{ url_for('index', status='active') }}">
+            <span class="dash-widget-num">{{ dash.online }}</span>
+            <span class="dash-widget-lbl">Online</span>
+        </a>
+        <a class="dash-widget dash-widget-offline" href="{{ url_for('index', status='offline') }}">
+            <span class="dash-widget-num">{{ dash.offline }}</span>
+            <span class="dash-widget-lbl">Offline</span>
+        </a>
+        <span class="dash-widget dash-widget-unknown">
+            <span class="dash-widget-num">{{ dash.unknown }}</span>
+            <span class="dash-widget-lbl">Unmonitored</span>
+        </span>
+        {% if dash.attention %}
+        <a class="dash-widget dash-widget-attention" href="{{ url_for('index', status='attention') }}">
+            <span class="dash-widget-num">{{ dash.attention }}</span>
+            <span class="dash-widget-lbl">Needs Attention</span>
+        </a>
+        {% endif %}
+        {% if dash.needs_update %}
+        <a class="dash-widget dash-widget-update" href="{{ url_for('index', status='update') }}">
+            <span class="dash-widget-num">{{ dash.needs_update }}</span>
+            <span class="dash-widget-lbl">Needs Update</span>
+        </a>
+        {% endif %}
+        <a class="dash-widget dash-widget-retired" href="{{ url_for('index', status='retired') }}">
+            <span class="dash-widget-num">{{ dash.retired }}</span>
+            <span class="dash-widget-lbl">Retired</span>
+        </a>
+        <span class="dash-widget dash-widget-uncategorised">
+            <span class="dash-widget-num">{{ dash.uncategorised }}</span>
+            <span class="dash-widget-lbl">Uncategorised</span>
+        </span>
+        <span class="dash-widget dash-widget-noip">
+            <span class="dash-widget-num">{{ dash.no_ip }}</span>
+            <span class="dash-widget-lbl">No IP</span>
+        </span>
+    </div>
+
+    {% set pm = dash.ping_monitored %}
+    {% set online_pct = ((dash.online / pm) * 100)|round|int if pm > 0 else 0 %}
+    {% set offline_pct = ((dash.offline / pm) * 100)|round|int if pm > 0 else 0 %}
+    {% set checking_pct = [0, 100 - online_pct - offline_pct]|max %}
+    <div class="dash-health-panel">
+        <div class="dash-health-bar">
+            {% if pm > 0 %}
+                <div class="dash-health-seg dash-health-online" style="width:{{ online_pct }}%"></div>
+                <div class="dash-health-seg dash-health-offline" style="width:{{ offline_pct }}%"></div>
+                <div class="dash-health-seg dash-health-checking" style="width:{{ checking_pct }}%"></div>
+            {% else %}
+                <div class="dash-health-seg dash-health-checking" style="width:100%"></div>
+            {% endif %}
+        </div>
+        <div class="dash-health-bottom">
+            <span class="dash-health-title">Network Health</span>
+            <div class="dash-health-legend">
+                <span class="dash-health-dot dash-health-dot-online"></span><span>Online {{ dash.online }}</span>
+                <span class="dash-health-dot dash-health-dot-offline"></span><span>Offline {{ dash.offline }}</span>
+                <span class="dash-health-dot dash-health-dot-checking"></span><span>Checking {{ dash.ping_checking }}</span>
+            </div>
+            <span class="dash-health-pct">{{ online_pct }}% uptime</span>
+        </div>
+    </div>
+</div>
+
+<section class="content-card assets-overview-card" id="assets-overview-card">
+    <div class="section-header asset-list-header">
+        <div>
+            <h1>Assets</h1>
+        </div>
+        <div class="asset-list-header-right">
+            <div class="results-meta">{{ assets|length }} result{{ '' if assets|length == 1 else 's' }}</div>
+            <button type="button" class="btn btn-secondary" id="bulk-select-toggle">Select</button>
+        </div>
+    </div>
+
+    <!-- Inline bulk action panel -->
+    <form method="post" action="{{ url_for('assets_bulk_update') }}" id="bulk-action-form" class="bulk-inline-panel" hidden>
+        <div class="bulk-inline-row">
+            <span class="bulk-count-label"><span id="bulk-count">0</span> selected</span>
+            <button type="button" class="btn btn-ghost btn-small" id="bulk-select-all">Select all</button>
+            <div class="bulk-action-controls">
+                <select name="category_id" class="bulk-category-select">
+                    <option value="">— Assign category —</option>
+                    {% for cat in all_categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="action" value="assign_category" class="btn btn-primary btn-small">Assign</button>
+                <div class="bulk-ping-toggle">
+                    <span class="bulk-ping-label">Ping check</span>
+                    <button type="submit" name="action" value="enable_ping" class="btn btn-secondary btn-small">Enable</button>
+                    <button type="submit" name="action" value="disable_ping" class="btn btn-ghost btn-small">Disable</button>
+                </div>
+                <button type="submit" name="action" value="delete" class="btn btn-danger btn-small" onclick="return confirm('Delete ' + document.getElementById('bulk-count').textContent + ' device(s)? This cannot be undone.')">Delete</button>
+            </div>
+            <button type="button" class="btn btn-ghost btn-small" id="bulk-cancel">Cancel</button>
+        </div>
+    </form>
+
+    {% macro render_asset_card(asset) %}
+    <article class="asset-card improved-card dashboard-card compact-dashboard-card" id="asset-card-{{ asset.id }}"
+        data-asset-id="{{ asset.id }}"
+        data-search="{{ (asset.name ~ ' ' ~ (asset.category.name if asset.category else '') ~ ' ' ~ (asset.ip_address or '') ~ ' ' ~ (asset.model or '') ~ ' ' ~ (asset.location or '') ~ ' ' ~ (asset.brand or '') ~ ' ' ~ (asset.hostname or ''))|lower }}">
+        <input type="checkbox" class="bulk-checkbox" value="{{ asset.id }}" hidden aria-hidden="true">
+        <div class="asset-card-head dashboard-card-head compact-dashboard-head">
+            <div class="asset-card-title-wrap compact-title-wrap">
+                <h2><a href="{{ url_for('asset_detail', asset_key=asset.asset_key) }}">{{ asset.name }}</a></h2>
+                <p class="asset-subtitle">
+                    {% if asset.category %}{{ asset.category.name }}{% else %}Uncategorised{% endif %}
+                    {% if asset.ip_address %} · <span class="copy-wrap copy-wrap-inline"><span>{{ asset.ip_address }}</span><button class="copy-btn" data-copy="{{ asset.ip_address }}" title="Copy IP" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button></span>{% endif %}
+                </p>
+            </div>
+            {% if asset.photos %}
+                <img class="asset-thumb compact-asset-thumb" src="{{ url_for('uploaded_file', filename=asset.photos[0].filename) }}" alt="{{ asset.name }}">
+            {% else %}
+                <div class="asset-thumb asset-thumb-icon compact-asset-thumb" style="--accent: {{ asset.category.color if asset.category and asset.category.color else '#4f8cff' }}">
+                    {{ asset.category.icon if asset.category and asset.category.icon else '📦' }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="compact-card-actions-row compact-card-actions-row-between">
+            <div class="compact-status-wrap">
+                {% set current_status = asset_status(asset) %}
+                <span class="status-badge {% if current_status in ['Retired', 'Offline'] %}attention{% elif current_status in ['Unknown', 'Checking'] %}update{% else %}active{% endif %}" data-ping-badge="{{ asset.id }}">{{ current_status }}</span>
+            </div>
+            <div class="card-actions split-actions compact-split-actions compact-actions-right">
+                <a class="btn btn-secondary btn-small compact-action-btn" href="{{ url_for('asset_detail', asset_key=asset.asset_key) }}">Open</a>
+                <a class="btn btn-ghost btn-small compact-action-btn" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Edit</a>
+            </div>
+        </div>
+
+    </article>
+    {% endmacro %}
+
+    {% if assets %}
+        {% if group_by != 'none' and grouped_assets %}
+            <div class="grouped-asset-stack">
+                {% for group in grouped_assets %}
+                    <details class="asset-accordion" {% if loop.first %}open{% endif %}>
+                        <summary class="asset-accordion-summary">
+                            <div class="asset-accordion-title-wrap">
+                                <strong>{{ group["label"] }}</strong>
+                                <span>{{ group["items"]|length }} item{{ '' if group["items"]|length == 1 else 's' }}</span>
+                            </div>
+                            <span class="asset-accordion-icon">▾</span>
+                        </summary>
+                        <div class="asset-accordion-body">
+                            <div class="asset-grid improved asset-grid-dashboard compact-dashboard-grid">
+                                {% for asset in group["items"] %}
+                                    {{ render_asset_card(asset) }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="asset-grid improved asset-grid-dashboard compact-dashboard-grid">
+                {% for asset in assets %}
+                    {{ render_asset_card(asset) }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state-card">
+            <strong>No assets found.</strong>
+            <p>Try clearing the search or add your first device.</p>
+        </div>
+    {% endif %}
+</section>
+<script src="{{ url_for('static', filename='js/index_live_search_v1.js') }}"></script>
+{% endblock %}

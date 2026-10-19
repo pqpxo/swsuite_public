@@ -1,0 +1,77 @@
+{# version 6 #}
+{% extends "base.html" %}
+{% block title %}Dashboard — SWKick{% endblock %}
+{% block body %}
+<main class="content">
+  <div class="dashboard-heading">
+    <div><h1>Host Overview</h1><p>Monitor Linux updates across your infrastructure.</p></div>
+    <div class="page-actions">
+      <button class="btn-primary check-all-button" type="button" onclick="checkAll(this)" aria-busy="false">
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 11a8 8 0 0 0-14.3-4.9L3 9"></path>
+          <path d="M3 4v5h5"></path>
+          <path d="M4 13a8 8 0 0 0 14.3 4.9L21 15"></path>
+          <path d="M16 15h5v5"></path>
+        </svg>
+        <span>Check all hosts</span>
+      </button>
+      <a class="chip add-host-button" href="{{ base }}/hosts/new/form">+ Add host</a>
+    </div>
+  </div>
+  <section class="metrics" aria-label="Infrastructure summary">
+    <div class="metric-card info"><span class="metric-icon">▣</span><div><strong class="metric-value">{{ host_count }}</strong><span class="metric-label">Total hosts</span></div></div>
+    <div class="metric-card good"><span class="metric-icon">✓</span><div><strong class="metric-value">{{ online_count }}</strong><span class="metric-label">Online</span></div></div>
+    <div class="metric-card warning"><span class="metric-icon">⬆</span><div><strong class="metric-value">{{ total_updates }}</strong><span class="metric-label">Pending updates</span></div></div>
+    <div class="metric-card danger"><span class="metric-icon">!</span><div><strong class="metric-value">{{ offline_count }}</strong><span class="metric-label">Offline</span></div></div>
+  </section>
+  <div class="toolbar">
+    <div class="search-field"><input id="host-search" type="search" placeholder="Search hosts, IP or OS…" aria-label="Search hosts" oninput="filterHosts()"></div>
+    <div class="toolbar-filters" role="group" aria-label="Filter host status">
+      <button type="button" class="chip is-selected" data-host-filter="all" aria-pressed="true" onclick="setHostFilter('all')">All</button>
+      <button type="button" class="chip" data-host-filter="updates" aria-pressed="false" onclick="setHostFilter('updates')">Updates</button>
+      <button type="button" class="chip" data-host-filter="online" aria-pressed="false" onclick="setHostFilter('online')">Online</button>
+      <button type="button" class="chip" data-host-filter="offline" aria-pressed="false" onclick="setHostFilter('offline')">Offline</button>
+    </div>
+    <div class="toolbar-filters"><span class="muted small">Group by</span>
+      {% for dim, label in dimensions %}
+      <a class="chip {{ 'chip-active' if dim == group_by else '' }}" href="{{ base }}/?group_by={{ dim }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% for group_name, hosts in grouped.items() %}
+  <section class="host-group" data-host-group>
+    <div class="group-label">{{ group_label }} · {{ group_name }} <small>({{ hosts | length }})</small></div>
+    <div class="card-grid">
+    {% for h in hosts %}{% set st = status_of(h) %}
+      <article class="card host-card" data-host-card data-status="{{ st }}" data-search="{{ (h['name'] ~ ' ' ~ h['hostname'] ~ ' ' ~ (h['os_label'] or '')) | lower }}">
+        <div class="host-head">
+          <div><a class="host-name" href="{{ base }}/hosts/{{ h['id'] }}">{{ h['name'] }}</a><div class="host-meta mono">{{ h['os_label'] or 'Unknown OS' }}<br>{{ h['hostname'] }}</div></div>
+          <span class="badge badge-{{ st }}">{% if st == 'offline' %}● Offline{% elif st == 'unknown' %}● Not checked{% elif st == 'ok' %}● Up to date{% else %}● {{ h['update_count'] }} updates{% endif %}</span>
+        </div>
+        <div class="muted small">Last checked: {{ h['last_checked_at'] or 'Never' }}</div>
+        <div class="host-actions">
+          <button class="btn-primary" type="button" {% if st in ('offline','unknown','ok') %}disabled{% endif %} onclick='runUpgrade({{ h["id"] }}, {{ h["name"] | tojson }})'>Update &amp; Upgrade</button>
+          <button class="btn-muted check-host-button" type="button" title="Check for updates" aria-label="Check for updates on {{ h['name'] }}" aria-busy="false" onclick='checkHost({{ h["id"] }}, {{ h["name"] | tojson }}, this)'>
+            <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 11a8 8 0 0 0-14.3-4.9L3 9"></path>
+              <path d="M3 4v5h5"></path>
+              <path d="M4 13a8 8 0 0 0 14.3 4.9L21 15"></path>
+              <path d="M16 15h5v5"></path>
+            </svg>
+          </button>
+          <a class="chip" href="{{ base }}/hosts/{{ h['id'] }}" aria-label="Details for {{ h['name'] }}">Details</a>
+        </div>
+      </article>
+    {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  {% if not grouped %}<div class="empty-state"><strong>No hosts added yet</strong><p>Add a Linux host to begin monitoring.</p><a class="btn-primary chip" href="{{ base }}/hosts/new/form">+ Add host</a></div>{% endif %}
+  <div id="filter-empty" class="empty-state" hidden><strong>No matching hosts</strong>Try changing your search or status filter.</div>
+</main>
+<div id="console-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="console-title">
+  <div class="card console-card"><div class="console-head"><span id="console-title">Job output</span><button class="chip" type="button" onclick="closeConsole()">Close</button></div><pre id="console-out" class="console" aria-live="polite"></pre></div>
+</div>
+{% endblock %}

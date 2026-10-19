@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.sqlite
+*.sqlite-*
+dev-master.key
+master.key
+*.key
+tests/
+docs/
+.git/
+.superpowers/

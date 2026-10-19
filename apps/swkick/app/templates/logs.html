@@ -1,0 +1,19 @@
+{# version 3 #}
+{% extends "base.html" %}
+{% block title %}Logs — SWKick{% endblock %}
+{% block body %}
+
+<main class="content"><div class="page-heading"><div><h1>Logs</h1><p>Manage your SWKick configuration and activity.</p></div></div>
+  <input class="filter" placeholder="Filter…" onkeyup="filterRows(this, 'log-table')">
+  <div class="table-scroll"><table class="log-table" id="log-table">
+    <tr><th>#</th><th>Host</th><th>Kind</th><th>Trigger</th><th>Status</th><th>Started</th></tr>
+    {% for j in jobs %}
+    <tr>
+      <td>{{ j['id'] }}</td><td>{{ j['host_id'] }}</td><td>{{ j['kind'] }}</td>
+      <td>{{ j['trigger'] }}</td><td class="st-{{ j['status'] }}">{{ j['status'] }}</td>
+      <td class="mono">{{ j['started_at'] }}</td>
+    </tr>
+    {% endfor %}
+  </table></div>
+</main>
+{% endblock %}

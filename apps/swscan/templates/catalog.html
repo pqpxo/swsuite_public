@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Catalog · SWScan{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Catalog <small>{{ total }} items</small></h1>
+  <form method="post" action="{{ url_for('item_new') }}" class="inline">
+    <button class="btn primary">+ Add item</button>
+  </form>
+</header>
+
+<section class="panel toolbar">
+  <form method="get" class="inline">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search name, notes, zone…">
+    <select name="group" onchange="this.form.submit()">
+      <option value="category" {{ 'selected' if group_by == 'category' }}>Group by type</option>
+      <option value="zone" {{ 'selected' if group_by == 'zone' }}>Group by zone</option>
+    </select>
+    <button class="btn">Filter</button>
+  </form>
+</section>
+
+{% for group, items in groups.items() %}
+<section class="panel">
+  <h2>{{ group }} <small>({{ items|length }})</small></h2>
+  <table>
+    <thead><tr><th></th><th>Name</th><th>Amount</th><th>{{ 'Zone' if group_by == 'category' else 'Type' }}</th><th>Condition</th><th>Verdict</th><th></th></tr></thead>
+    <tbody>
+    {% for it in items %}
+      <tr class="{{ 'rejected-row' if it.verified == 'rejected' }}">
+        <td class="cell-thumb">
+          {% if it.image_path and it.box %}<img src="{{ url_for('item_boxed', item_id=it.id) }}" alt="">
+          {% elif it.image_path %}<img src="{{ url_for('media', relpath=it.image_path) }}" alt="">
+          {% elif it.image_url %}<img src="{{ it.image_url }}" alt="">{% endif %}
+        </td>
+        <td><a href="{{ url_for('item_detail', item_id=it.id) }}">{{ it.name }}</a></td>
+        <td class="mono">{{ it.quantity }}</td>
+        <td>{{ it.zone or '·' if group_by == 'category' else it.category }}</td>
+        <td>{{ it.condition }}</td>
+        <td class="row-actions">
+          {% if it.verified == 'confirmed' %}<span class="badge complete">✓ confirmed</span>
+          {% elif it.verified == 'rejected' %}<span class="badge failed">✗ rejected</span>
+          {% elif it.job_id %}
+          <form method="post" action="{{ url_for('item_verify', item_id=it.id) }}">
+            <input type="hidden" name="action" value="confirm"><button class="btn sm ok" title="Correct">✓</button>
+          </form>
+          <form method="post" action="{{ url_for('item_verify', item_id=it.id) }}">
+            <input type="hidden" name="action" value="reject"><button class="btn sm danger" title="Wrong">✗</button>
+          </form>
+          {% else %}<span class="badge">manual</span>{% endif %}
+        </td>
+        <td class="row-actions">
+          <form method="post" action="{{ url_for('item_delete', item_id=it.id) }}"
+                onsubmit="return confirm('Delete {{ it.name }}?')">
+            <button class="btn danger sm">del</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% else %}
+<section class="panel"><p class="empty">Catalog is empty. Run a scan or add an item manually.</p></section>
+{% endfor %}
+{% endblock %}

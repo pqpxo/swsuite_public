@@ -1,0 +1,16 @@
+.env
+*.log
+/data/
+caddy/data/
+caddy/config/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+portal/*.zip
+/*logo*.png
+/logomain.png
+.claude/
+.pushed.md5
+update/
+/secrets/

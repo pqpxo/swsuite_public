@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Gallery · SWScan{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Gallery</h1></header>
+<section class="panel toolbar">
+  <form method="get" class="inline">
+    <select name="job" onchange="this.form.submit()">
+      <option value="">All scans</option>
+      {% for j in jobs %}<option value="{{ j.id }}" {{ 'selected' if j.id == job_id }}>#{{ j.id }} — {{ j.filename[:40] }}</option>{% endfor %}
+    </select>
+  </form>
+</section>
+<section class="panel">
+  <div class="grid">
+    {% for f in frames %}
+    <a class="thumb" href="{{ url_for('media', relpath=f.path) }}" target="_blank">
+      <img src="{{ url_for('media', relpath=f.path) }}" loading="lazy" alt="">
+      <span>scan {{ f.job_id }} · #{{ f.idx }}</span>
+    </a>
+    {% else %}<p class="empty">No frames yet.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

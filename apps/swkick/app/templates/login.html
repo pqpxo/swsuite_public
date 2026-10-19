@@ -1,0 +1,11 @@
+{# version 4 #}
+{% extends "base.html" %}
+{% block title %}Sign in — SWKick{% endblock %}
+{% block body %}
+<div class="login-wrap"><form class="card login-card" method="post" action="{{ base }}/login">
+  <div class="brand"><img class="brand-mark" src="{{ base }}/static/swkick-logo.png?v=1" alt="" width="52" height="52"/><span class="brand-copy"><strong>SWKick</strong><small>Linux Update Dashboard</small></span></div>
+  {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+  <label>Username<input name="username" autocomplete="username" autofocus required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+  <button class="btn-primary full" type="submit">Sign in</button>
+</form></div>
+{% endblock %}

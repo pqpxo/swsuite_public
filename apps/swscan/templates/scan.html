@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}New scan · SWScan{% endblock %}
+{% block content %}
+<header class="page-head"><h1>New scan</h1></header>
+
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+<section class="panel narrow">
+  <form method="post" enctype="multipart/form-data" id="scan-form">
+    <label>Walkthrough video
+      <input type="file" name="video" accept="video/*" required>
+    </label>
+    <label>Zone / location tag <small>(e.g. office-desk, cable-drawer, rack-shelf-2)</small>
+      <input type="text" name="zone" placeholder="office">
+    </label>
+    <label>Provider
+      <select name="provider" id="provider-select">
+        {% for p, label in PROVIDER_LABELS.items() %}
+        <option value="{{ p }}" {{ 'selected' if p == provider }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Model override <small>(blank = default: <span id="model-default">{{ defaults[provider] }}</span>)</small>
+      <input type="text" name="model" placeholder="">
+    </label>
+    <button class="btn primary" type="submit">Upload &amp; scan</button>
+    <p class="hint">Tip: move slowly, pause 2 to 3 seconds on each pile or shelf, and get close.
+    Scene-change detection picks the frames, so distinct viewpoints beat continuous panning.</p>
+  </form>
+</section>
+<script>
+const DEFAULTS = {{ defaults|tojson }};
+document.getElementById('provider-select').addEventListener('change', e => {
+  document.getElementById('model-default').textContent = DEFAULTS[e.target.value];
+});
+</script>
+{% endblock %}
