@@ -1,7 +1,22 @@
-# SWSuite
+<p align="center">
+  <img src="portal/assets/logo-192.png" alt="SWSuite logo" width="140" height="140">
+</p>
 
-Five self-hosted apps for running a homelab, behind one portal and one
-`docker compose up`.
+<h1 align="center">SWSuite</h1>
+
+<p align="center">
+  Five self-hosted homelab apps behind one portal and one <code>docker compose up</code>.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-5b9975"></a>
+  <img alt="Docker Compose" src="https://img.shields.io/badge/docker-compose-242e42?logo=docker&logoColor=white">
+  <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-LAN-242e42">
+</p>
+
+<p align="center">
+  <img src=".github/assets/portal.png" alt="The SWSuite portal: five app tiles with live status, SWKick selected" width="900">
+</p>
 
 | App | What it does | Path | Direct port |
 |---|---|---|---|

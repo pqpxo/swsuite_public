@@ -31,7 +31,7 @@ window.SWSUITE = {
   apps: [
     {
       id: 'rack',
-      repo: 'https://github.com/pqpxo/swrack',
+      repo: 'https://github.com/pqpxo/swsuite_public/tree/main/apps/swrack',
       logo: 'assets/apps/rack.png',
       name: 'SWRack',
       desc: 'Visual rack and data-cabinet documentation',
@@ -41,7 +41,7 @@ window.SWSUITE = {
     },
     {
       id: 'inventory',
-      repo: 'https://github.com/pqpxo/swakesop',
+      repo: 'https://github.com/pqpxo/swsuite_public/tree/main/apps/swakesop',
       logo: 'assets/apps/inventory.png',
       name: 'SWOps',
       desc: 'Asset inventory, connection trails and QR labels',
@@ -60,7 +60,7 @@ window.SWSUITE = {
     },
     {
       id: 'provision',
-      repo: 'https://github.com/pqpxo/swaps',
+      repo: 'https://github.com/pqpxo/swsuite_public/tree/main/apps/swaps',
       logo: 'assets/apps/provision.png',
       name: 'SWAps',
       desc: 'Generate and deploy Linux provisioning over SSH',
@@ -70,7 +70,7 @@ window.SWSUITE = {
     },
     {
       id: 'kick',
-      repo: 'https://github.com/pqpxo/kicker',
+      repo: 'https://github.com/pqpxo/swsuite_public/tree/main/apps/swkick',
       logo: 'assets/apps/kick.png',
       name: 'SWKick',
       desc: 'Pending apt updates and live upgrades across Linux hosts',
