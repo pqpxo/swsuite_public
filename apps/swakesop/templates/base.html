@@ -194,12 +194,12 @@
                 <div class="three-up-qr-actions">
                     <button type="submit" class="btn btn-small btn-primary" id="three-up-generate-btn">Generate</button>
                     <a href="#" class="btn btn-small btn-secondary is-disabled" id="three-up-download-btn" aria-disabled="true">Download</a>
-                    <button type="button" class="btn btn-small btn-primary" id="three-up-send-btn" disabled>Send to printer</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script>window.SWOPS_ROOT = {{ request.script_root|tojson }};</script>
     <script src="{{ url_for('static', filename='js/three_up_qr_label_v2.js') }}"></script>
 </body>
 </html>

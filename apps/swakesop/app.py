@@ -72,10 +72,6 @@ PING_LOCK_PATH = DATA_DIR / ".ping_worker.lock"
 THREE_UP_QR_OUTPUT_DIR = BASE_DIR / "static" / "generated" / "three_up_qr"
 THREE_UP_QR_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-LABEL_PRINTER_API_URL = os.environ.get(
-    "LABEL_PRINTER_API_URL",
-    "http://x.x.x.x:5000/api/print",
-)
 
 THREE_UP_LABEL_WIDTH = 696
 THREE_UP_LABEL_HEIGHT = 271
@@ -1027,7 +1023,6 @@ def inject_helpers():
         "category_icon_inner": category_icon_inner,
         "layout_mode": get_setting("layout_mode", "compact") or "compact",
         "three_up_qr_assets": Asset.query.order_by(Asset.name.asc()).all(),
-        "label_printer_api_url": LABEL_PRINTER_API_URL,
         "sidebar_online": Asset.query.filter(
             Asset.ping_enabled.is_(True), Asset.last_ping_status == "active"
         ).count(),
@@ -1245,43 +1240,10 @@ def api_three_up_qr_generate():
             "ok": True,
             "filename": result["filename"],
             "image_url": result["image_url"],
-            "print_url": f"{LABEL_PRINTER_API_URL}?image_url={quote(result['image_url'], safe='')}",
         }
     )
 
 
-@app.post("/api/three-up-qr/print")
-def api_three_up_qr_print():
-    if not LABEL_PRINTER_API_URL:
-        return jsonify({"ok": False, "error": "Label printer URL is not configured. Set LABEL_PRINTER_API_URL in your environment."}), 503
-
-    payload = request.get_json(silent=True) or {}
-    image_url = (payload.get("image_url") or "").strip()
-
-    if not image_url:
-        return jsonify({"ok": False, "error": "image_url is required"}), 400
-
-    try:
-        response = requests.get(
-            LABEL_PRINTER_API_URL,
-            params={"image_url": image_url},
-            timeout=30,
-        )
-        response.raise_for_status()
-    except Exception as exc:
-        app.logger.exception("3-up QR print request failed: %s", exc)
-        return jsonify({"ok": False, "error": str(exc)}), 502
-
-    response_text = response.text.strip()
-    return jsonify(
-        {
-            "ok": True,
-            "message": "Label sent to printer successfully.",
-            "printer_status": response.status_code,
-            "printer_response": response_text,
-            "requested_url": f"{LABEL_PRINTER_API_URL}?image_url={quote(image_url, safe='')}",
-        }
-    )
 
 @app.route("/connections")
 def connection_map():

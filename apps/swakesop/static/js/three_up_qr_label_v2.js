@@ -9,6 +9,8 @@
 
   const generateBtn = document.getElementById('three-up-generate-btn');
   const sendBtn = document.getElementById('three-up-send-btn');
+  // Mount path ('' standalone, '/ops' behind the suite proxy); set in base.html.
+  const ROOT = window.SWOPS_ROOT || '';
   const downloadBtn = document.getElementById('three-up-download-btn');
 
   const previewWrap = document.getElementById('three-up-preview-wrap');
@@ -102,7 +104,7 @@
     setStatus('Generating 3-up QR label image...', 'info');
 
     try {
-      const response = await fetch('/api/three-up-qr/generate', {
+      const response = await fetch(ROOT + '/api/three-up-qr/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asset_ids: getSelectedAssetIds() })
@@ -150,35 +152,6 @@
     }
   }
 
-  async function sendToPrinter() {
-    if (!latestImageUrl) {
-      setStatus('Generate the label image first.', 'error');
-      return;
-    }
-
-    setBusy(true);
-    setStatus('Sending label to printer...', 'info');
-
-    try {
-      const response = await fetch('/api/three-up-qr/print', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_url: latestImageUrl })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || 'Failed to send label to printer.');
-      }
-
-      setStatus('Label sent to printer successfully.', 'success');
-    } catch (error) {
-      setStatus(error.message || 'Failed to send label to printer.', 'error');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   openBtn?.addEventListener('click', openModal);
   closeBtn?.addEventListener('click', closeModal);
@@ -195,7 +168,6 @@
     generateLabel();
   });
 
-  sendBtn?.addEventListener('click', sendToPrinter);
 
   resetPreview();
 })();
