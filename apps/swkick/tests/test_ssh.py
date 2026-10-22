@@ -5,7 +5,8 @@ from app.ssh import ParamikoExecutor
 class FakeStd:
     def __init__(self, lines, exit_code):
         self._lines = list(lines)
-        self.channel = type("C", (), {"recv_exit_status": staticmethod(lambda: exit_code)})()
+        self.channel = type("C", (), {"recv_exit_status": staticmethod(lambda: exit_code),
+                                      "set_combine_stderr": lambda self, v: None})()
 
     def __iter__(self):
         return iter(self._lines)
@@ -35,6 +36,7 @@ class FakeClient:
 
     def exec_command(self, command, get_pty=False):
         self.last_command = command
+        self.last_get_pty = get_pty
         stdin = FakeStdIn(self.stdin_writes)
         stdout = FakeStd(self.out_lines, self.exit_code)
         stderr = FakeStd([], self.exit_code)
@@ -73,3 +75,13 @@ def test_stream_yields_lines_and_sets_exit():
     lines = list(ex.stream(_host(), "apt-get -y upgrade", result, sudo=True))
     assert lines == ["a\n", "b\n"]
     assert result.exit_code == 0
+
+
+def test_stream_never_echoes_the_sudo_password():
+    # A pty would echo the password written to stdin back into the output.
+    fake = FakeClient(["sp\n", "Reading package lists... sp done\n"], 0)
+    ex = ParamikoExecutor(connect=lambda host: fake)
+    lines = list(ex.stream(_host(), "apt-get -y upgrade", RunResult(), sudo=True))
+    assert fake.last_get_pty is False
+    assert "sp\n" in fake.stdin_writes
+    assert not any("sp" in l for l in lines), lines

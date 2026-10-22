@@ -196,3 +196,23 @@ form.inline input, form.inline select { display: inline-block; width: auto; marg
 .rv-actions .btn { flex: 1; }
 .rv-nav { display: flex; gap: 8px; }
 .rv-nav .btn { flex: 1; text-align: center; }
+
+/* SWSuite theme — SWAps / SWKick design system. Remaps tokens; layout unchanged. */
+:root {
+  --navy-deep: #1f2839;
+  --navy-base: #1a2133;
+  --navy-panel: #242e42;
+  --navy-raise: #2c3650;
+  --edge: #3a4d6a;
+  --edge-soft: #2c3650;
+  --text: #e6edf3;
+  --text-2: #b1b8c0;
+  --text-3: #8b95a5;
+  --accent: #1D9E75;
+  --accent-dim: #17865f;
+  --ok: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+  --mono: 'JetBrains Mono', 'Fira Mono', monospace;
+}
+body { font-family: 'Roboto', system-ui, sans-serif; }

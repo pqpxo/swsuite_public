@@ -56,12 +56,19 @@ class ParamikoExecutor:
         client = self._connect(host)
         try:
             cmd = _wrap_sudo(command) if sudo else command
-            stdin, stdout, stderr = client.exec_command(cmd, get_pty=True)
-            if sudo and host.credential.sudo_password:
-                stdin.write(host.credential.sudo_password + "\n")
+            # No pty: a terminal echoes what is written to it, so the sudo
+            # password sent below came straight back as the first log line.
+            # sudo -S reads stdin without one. Merge stderr so errors still show.
+            stdin, stdout, stderr = client.exec_command(cmd, get_pty=False)
+            stdout.channel.set_combine_stderr(True)
+            pw = host.credential.sudo_password if sudo else None
+            if pw:
+                stdin.write(pw + "\n")
                 stdin.flush()
             for line in stdout:
-                yield line if isinstance(line, str) else line.decode()
+                line = line if isinstance(line, str) else line.decode()
+                # Second guard: this output is shown live and stored in the job log.
+                yield line.replace(pw, "********") if pw else line
             result.exit_code = stdout.channel.recv_exit_status()
         finally:
             client.close()
