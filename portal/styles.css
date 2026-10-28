@@ -48,15 +48,15 @@ h1 { font-size: 42px; line-height: 1.12; font-weight: 500; letter-spacing: -1.7p
 .app-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0; text-align: center; padding: 18px 8px 13px; border: 1px solid transparent; border-radius: 18px; background: transparent; min-width: 0; }
 .app-tile:hover { background: var(--surface); }
 .app-tile[aria-pressed='true'] { background: var(--tint); border-color: var(--accent); box-shadow: 0 5px 14px #00000006; }
-.app-icon { display: grid; place-items: center; width: 59px; height: 59px; border-radius: 17px; background: var(--soft); color: var(--muted); flex-shrink: 0; }
+.app-icon { display: grid; place-items: center; width: 94px; height: 94px; border-radius: 17px; background: var(--soft); color: var(--muted); flex-shrink: 0; }
 .app-icon .icon { width: 27px; height: 27px; }
 .app-tile .app-icon { margin-bottom: 13px; }
 .app-tile[aria-pressed='true'] .app-icon { background: var(--accent); color: var(--bg); }
 /* App logos carry their own background, so the plate behind them stays clear in every state. */
 .app-icon.has-logo, .app-tile[aria-pressed='true'] .app-icon.has-logo { background: transparent; }
 .app-icon .logo { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
-.app-tile .app-icon.has-logo { border-radius: 14px; }
-.feature-art .app-icon.has-logo { border-radius: 22px; box-shadow: 0 10px 22px #00000033; }
+.app-tile .app-icon.has-logo { border-radius: 22px; }
+.feature-art .app-icon.has-logo { border-radius: 35px; box-shadow: 0 10px 22px #00000033; }
 .app-tile strong { font-size: 18px; font-weight: 700; margin-bottom: 5px; overflow-wrap: anywhere; }
 .feature { display: grid; grid-template-columns: minmax(0, 1fr) 210px; min-height: 215px; background: var(--surface); border: 1px solid var(--border); border-radius: 23px; overflow: hidden; }
 .feature-info { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 14px; min-width: 0; padding: 26px 30px; }
@@ -75,7 +75,7 @@ h2 { font-size: 23px; font-weight: 700; letter-spacing: -.5px; }
 .feature-art { display: grid; place-items: center; position: relative; overflow: hidden; background: #242e42; }
 .feature-art::before, .feature-art::after { content: ''; position: absolute; width: 225px; height: 225px; border: 1px solid var(--accent); opacity: .15; border-radius: 50%; }
 .feature-art::after { width: 150px; height: 150px; }
-.feature-art .app-icon { width: 92px; height: 92px; border-radius: 24px; background: var(--surface); color: var(--text); box-shadow: 0 10px 22px #0000000a; transform: rotate(-7deg); z-index: 1; }
+.feature-art .app-icon { width: 147px; height: 147px; border-radius: 24px; background: var(--surface); color: var(--text); box-shadow: 0 10px 22px #0000000a; transform: rotate(-7deg); z-index: 1; }
 .feature-art .icon { width: 42px; height: 42px; }
 .note { margin-top: 20px; padding: 14px; border: 1px solid var(--border); border-left: 3px solid var(--waiting); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 13px; }
 .footer { margin-top: auto; display: flex; justify-content: center; padding: 25px 38px; color: var(--muted); font-size: 11px; }
@@ -98,7 +98,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--online); outlin
   .apps { gap: 4px; }
   .app-tile { padding: 14px 3px 11px; }
   .app-tile strong { font-size: 15px; }
-  .app-tile .app-icon { width: 50px; height: 50px; }
+  .app-tile .app-icon { width: 80px; height: 80px; }
   .status { font-size: 11px; gap: 4px; }
 }
 @media (max-width: 620px) {
@@ -112,11 +112,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--online); outlin
   .apps { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
   .app-tile { padding: 13px 4px; }
   .app-tile strong { font-size: 11px; }
-  .app-tile .app-icon { width: 49px; height: 49px; border-radius: 14px; }
+  .app-tile .app-icon { width: min(78px, 100%); height: auto; aspect-ratio: 1; border-radius: 22px; }
   .feature { grid-template-columns: 1fr; }
   .feature-art { min-height: 146px; grid-row: 1; }
   .feature-info { padding: 23px; }
-  .feature-art .app-icon { width: 75px; height: 75px; }
+  .feature-art .app-icon { width: 120px; height: 120px; }
   .footer { padding: 23px 20px; }
 }
 @media (max-width: 620px) { .edit-toggle { top: 12px; right: 12px; } }
